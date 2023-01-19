@@ -233,6 +233,12 @@ ____complex_struct_to_string_func____
 
 ____func_code____
 
+
+int osc_sdk_set_useragent(struct osc_env *e, const char *str)
+{
+	return curl_easy_setopt(e->c, CURLOPT_USERAGENT, str);
+}
+
 int osc_init_sdk(struct osc_env *e, const char *profile, unsigned int flag)
 {
 	char ak_sk[AK_SIZE + SK_SIZE + 2];
@@ -240,7 +246,9 @@ int osc_init_sdk(struct osc_env *e, const char *profile, unsigned int flag)
 	char *endpoint;
 	char *env_ak = getenv("OSC_ACCESS_KEY");
 	char *env_sk = getenv("OSC_SECRET_KEY");
+	char user_agent[sizeof "osc-sdk-C/" + OSC_SDK_VERSON_L];
 
+	strcpy(stpcpy(user_agent, "osc-sdk-C/"), osc_sdk_version_str());
 	e->region = getenv("OSC_REGION");
 	e->flag = flag;
 	endpoint = getenv("OSC_ENDPOINT_API");
@@ -294,6 +302,7 @@ int osc_init_sdk(struct osc_env *e, const char *profile, unsigned int flag)
 		curl_easy_setopt(e->c, CURLOPT_SSL_VERIFYPEER, 0);
 	curl_easy_setopt(e->c, CURLOPT_HTTPHEADER, e->headers);
 	curl_easy_setopt(e->c, CURLOPT_WRITEFUNCTION, write_data);
+	curl_easy_setopt(e->c, CURLOPT_USERAGENT, user_agent);
 
 	/* setting CA is CURL_CA_BUNDLE is set */
 	if (ca)

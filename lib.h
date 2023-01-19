@@ -37,6 +37,10 @@
 #ifndef __SDK_C__
 #define __SDK_C__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <curl/curl.h>
 
 #ifdef __GNUC__
@@ -55,6 +59,7 @@ struct osc_str {
 #define OSC_INSECURE_MODE 8
 
 #define OSC_API_VERSION "____api_version____"
+#define OSC_SDK_VERSION ____sdk_version____
 
 struct osc_env {
 	char *ak;
@@ -66,6 +71,25 @@ struct osc_env {
 	CURL *c;
 };
 
+#define OSC_SDK_VERSON_L (sizeof "00.11.22" - 1)
+
+static const char *osc_sdk_version_str(void)
+{
+	static char ret[OSC_SDK_VERSON_L];
+
+	if (OSC_SDK_VERSION == 0xC061AC)
+		return "COGNAC-gen";
+	ret[1] = (OSC_SDK_VERSION & 0x00000F) + '0';
+	ret[0] = ((OSC_SDK_VERSION & 0x0000F0) >> 4) + '0';
+	ret[2] = '.';
+	ret[4] = ((OSC_SDK_VERSION & 0x000F00) >> 8) + '0';
+	ret[3] = ((OSC_SDK_VERSION & 0x00F000) >> 12) + '0';
+	ret[5] = '.';
+	ret[7] = ((OSC_SDK_VERSION & 0x0F0000) >> 16) + '0';
+	ret[6] = ((OSC_SDK_VERSION & 0xF00000) >> 20) + '0';
+	return ret;
+}
+
 ____args____
 
 int osc_load_ak_sk_from_conf(const char *profile, char **ak, char **sk);
@@ -76,6 +100,8 @@ void osc_deinit_str(struct osc_str *r);
 int osc_init_sdk(struct osc_env *e, const char *profile, unsigned int flag);
 void osc_deinit_sdk(struct osc_env *e);
 
+int osc_sdk_set_useragent(struct osc_env *e, const char *str);
+
 #ifdef WITH_DESCRIPTION
 
 const char *osc_find_description(const char *call_name);
@@ -84,5 +110,9 @@ const char *osc_find_args_description(const char *call_name);
 #endif /* WITH_DESCRIPTION */
 
 ____functions_proto____
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __SDK_C__ */

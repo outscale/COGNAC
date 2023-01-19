@@ -135,6 +135,7 @@ EOF
 replace_args()
 {
     API_VERSION=$(json-search -R version <<< $OSC_API_JSON)
+    SDK_VERSION=$(cat sdk-version)
     while IFS= read -r line
     do
 	#check ____args____ here
@@ -372,7 +373,7 @@ EOF
 		done < function.${lang}
 	    done
 	else
-	    sed "s/____call_list____/${CALL_LIST}/g;s/____piped_call_list____/${PIPED_CALL_LIST}/;s/____api_version____/${API_VERSION}/g" <<< "$line";
+	    sed "s/____call_list____/${CALL_LIST}/g;s/____piped_call_list____/${PIPED_CALL_LIST}/;s/____api_version____/${API_VERSION}/g;s/____sdk_version____/${SDK_VERSION}/g" <<< "$line";
 	fi
     done < $1
 }

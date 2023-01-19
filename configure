@@ -14,6 +14,7 @@ HAVE_RECOMPILE_JSON_C=0
 LD_CURLLIB_PATH=''
 LD_JSONCLIB_PATH=''
 API_VERSION=master
+SDK_VERSION=0xC061AC
 
 for arg in $@; do
     if [ "--help" = $arg ]; then
@@ -25,7 +26,8 @@ for arg in $@; do
    --gnu-sed-alias			use gsed for sed
    --yq-go                              use go version of yq, that use diferents arguments
    --curl-path=PATH			path to curl source root
-   --target-api=VERSION			choose a version, 'master' is the default
+   --sdk-version			sdk-version to generate (format 0xMajMajminMinPatchPatch(0x000302))
+    --target-api=VERSION			choose a version, 'master' is the default
    --curl-install-path=PATH		path to curl installed root
    --list-api-versions			list-api-versions on github
 EOF
@@ -63,6 +65,8 @@ EOF
 	SED_ALIAS="'alias sed=gsed'"
     elif [ "--target-api" = $( echo "$arg" | cut -d '=' -f 1) ]; then
 	API_VERSION=$( echo $arg | cut -f 2 -d '=' )
+    elif [ "--sdk-version" = $( echo "$arg" | cut -d '=' -f 1) ]; then
+	SDK_VERSION=$( echo $arg | cut -f 2 -d '=' )
     elif [ "--curl-path" = $( echo "$arg" | cut -d '=' -f 1) ]; then
 	CURL_PATH=$( echo $arg | cut -f 2 -d '=' )
 	LD_CURLLIB_PATH="$CURL_PATH/lib/.libs/"
@@ -99,5 +103,6 @@ echo JSON_C_LDFLAGS=$JSON_C_LDFLAGS >> config.mk
 echo JSON_C_CFLAGS=$JSON_C_CFLAGS >> config.mk
 echo JSON_C_RULE=$JSON_C_RULE >> config.mk
 echo API_VERSION=$API_VERSION >> config.mk
+echo $SDK_VERSION > sdk-version
 echo "config done:"
 cat config.mk
