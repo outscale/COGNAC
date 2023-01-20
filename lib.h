@@ -44,6 +44,11 @@ extern "C" {
 #include <curl/curl.h>
 
 #ifdef __GNUC__
+/*
+ * note that thoses attribute work, on the struct, not the pointer
+ * so, use it with "auto_osc_env struct osc_env e;"
+ * note the absence of '*' before e; (and same with osc_str)
+ */
 #define auto_osc_str __attribute__((cleanup(osc_deinit_str)))
 #define auto_osc_env __attribute__((cleanup(osc_deinit_sdk)))
 #endif
@@ -99,6 +104,44 @@ void osc_init_str(struct osc_str *r);
 void osc_deinit_str(struct osc_str *r);
 int osc_init_sdk(struct osc_env *e, const char *profile, unsigned int flag);
 void osc_deinit_sdk(struct osc_env *e);
+
+/*
+ * osc_new_sdk/str and osc_destroy_sdk/str where made so we can use
+ * C++'s std::unique_ptr with the lib.
+ * use it like
+ * const std::unique_ptr<osc_env, decltype(&osc_destroy_sdk)>
+ *	e(osc_new_sdk(NULL, 0), &osc_destroy_sdk);
+ */
+static struct osc_env *osc_new_sdk(const char *profile, unsigned int flag)
+{
+	struct osc_env *e = (struct osc_env *)malloc(sizeof *e);
+
+	if (osc_init_sdk(e, profile, flag) < 0) {
+		free(e);
+		return NULL;
+	}
+	return e;
+}
+
+static void osc_destroy_sdk(struct osc_env *e)
+{
+	osc_deinit_sdk(e);
+	free(e);
+}
+
+static struct osc_str *osc_new_str(void)
+{
+	struct osc_str *e = (struct osc_str *)malloc(sizeof *e);
+
+	osc_init_str(e);
+	return e;
+}
+
+static void osc_destroy_str(struct osc_str *e)
+{
+	osc_deinit_str(e);
+	free(e);
+}
 
 int osc_sdk_set_useragent(struct osc_env *e, const char *str);
 
