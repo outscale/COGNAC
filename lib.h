@@ -41,6 +41,7 @@
 extern "C" {
 #endif
 
+#include <stdlib.h>
 #include <curl/curl.h>
 
 #ifdef __GNUC__
