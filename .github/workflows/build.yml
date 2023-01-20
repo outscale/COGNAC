@@ -25,7 +25,7 @@ jobs:
       run: |
         sudo chsh -s $(which bash) $(whoami)
         make main.c osc_sdk.c osc_sdk.h oapi-cli-completion.bash
-        tar c osc_sdk.c osc_sdk.h main.c oapi-cli-completion.bash > build-src.tar
+# tar c osc_sdk.c osc_sdk.h main.c oapi-cli-completion.bash > build-src.tar
 
 # commented, because uploading generated source is made in oapi-cli/osc-sdk-c projects
 #    - uses: "marvinpinto/action-automatic-releases@latest"
