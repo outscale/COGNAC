@@ -7,13 +7,16 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
     - uses: actions/checkout@v2
 
     - name: setup yq
-      run: sudo snap install yq
+      run: |
+        sudo snap install yq
+        sudo apt-get update --fix-missing
+        sudo apt-get install -y -f -o Acquire::Retries=3 libfuse2
 
     - name: configure
       run: ./configure --wget-json-search --yq-go --compile-json-c
