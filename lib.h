@@ -106,12 +106,13 @@ int osc_load_ak_sk_from_conf(const char *profile, char **ak, char **sk);
 int osc_load_region_from_conf(const char *profile, char **region);
 
 /**
- * @brief parse osc config file, and store cred/key.
+ * @brief parse osc config file, and store cred_path/key_path. key is optional.
  *
  * @return if < 0, an error, otherwise a flag contain OSC_ENV_FREE_CERT,
  *	OSC_ENV_FREE_SSLKEY, both or 0
  */
-int osc_load_cert_from_conf(const char *profile, char **cert, char **key);
+int osc_load_cert_from_conf(const char *profile, char **cert_path,
+			    char **key_path);
 
 void osc_init_str(struct osc_str *r);
 void osc_deinit_str(struct osc_str *r);
