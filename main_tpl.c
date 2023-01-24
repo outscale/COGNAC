@@ -76,8 +76,8 @@ ____complex_struct_func_parser____
 
 int main(int ac, char **av)
 {
-	auto_osc_env struct osc_env e;
-	auto_osc_str struct osc_str r;
+	auto_osc_env struct osc_env e = {0};
+	auto_osc_str struct osc_str r = {0};
 	int color_flag = 0;
 	int i;
 	char *help_appent = getenv("COGNAC_HELP_APPEND");
@@ -91,13 +91,17 @@ int main(int ac, char **av)
 		program_name = av[0];
 	else
 		++program_name;
+
+
 	for (i = 1; i < ac; ++i) {
 		if (!strcmp("--verbose", av[i])) {
 		  flag |= OSC_VERBOSE_MODE;
 		} else if (!strcmp("--insecure", av[i])) {
 		  flag |= OSC_INSECURE_MODE;
-		} else if (!strcmp("--insecure", av[i])) {
-		  flag |= OSC_INSECURE_MODE;
+		} else if (!strcmp("--raw-print", av[i])) {
+		  flag |= OAPI_RAW_OUTPUT;
+		} else if (!strcmp("--auth-password", av[i])) {
+		  flag |= OSC_ENV_PASSWORD_AUTH;
 		} else if (!argcmp2("--profile", av[i], '=')) {
 			if (av[i][sizeof("--profile") - 1] == '=') {
 				profile = &av[i][sizeof("--profile")];
@@ -123,6 +127,7 @@ int main(int ac, char **av)
 		       "options:\n"
 		       "\t--insecure	\tdoesn't verify SSL certificats\n"
 		       "\t--raw-print	\tdoesn't format the output\n"
+		       "\t--auth-password	\tuse password/login instead of AK/SK\n"
 		       "\t--verbose	\tcurl backend is now verbose\n"
 		       "\t--profile=PROFILE	\tselect profile"
 		       "\t--help [CallName]\tthis, can be used with call name, example:\n\t\t\t\t%s --help ReadVms\n"
@@ -133,7 +138,10 @@ int main(int ac, char **av)
 	}
 
 	for (i = 1; i < ac; ++i) {
-		if (!strcmp("--verbose", av[i]) || !strcmp("--insecure", av[i])) {
+		if (!strcmp("--verbose", av[i]) ||		\
+		    !strcmp("--insecure", av[i]) ||		\
+		    !strcmp("--auth-password", av[i]) ||	\
+		    !strcmp("--raw-print", av[i])) {
 			/* Avoid Unknow Calls */
 		} else if (!argcmp2("--profile", av[i], '=')) {
 			if (!av[i][sizeof("--profile") - 1]) {
@@ -154,8 +162,6 @@ int main(int ac, char **av)
 				}
 			}
 			goto show_help;
-		} else if (!strcmp("--raw-print", av[i])) {
-			program_flag |= OAPI_RAW_OUTPUT;
 		} else if (!strcmp("--color", av[i])) {
 			color_flag |= JSON_C_TO_STRING_COLOR;
 		} else
