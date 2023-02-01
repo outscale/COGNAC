@@ -281,11 +281,11 @@ int osc_init_sdk(struct osc_env *e, const char *profile, unsigned int flag)
 	char *endpoint;
 	char *env_ak = getenv("OSC_ACCESS_KEY");
 	char *env_sk = getenv("OSC_SECRET_KEY");
-	char user_agent[sizeof "osc-sdk-C/" + OSC_SDK_VERSON_L];
+	char user_agent[sizeof "osc-sdk-c/" + OSC_SDK_VERSON_L];
 	char *cert = getenv("OSC_X509_CLIENT_CERT");
 	char *sslkey = getenv("OSC_X509_CLIENT_KEY");
 
-	strcpy(stpcpy(user_agent, "osc-sdk-C/"), osc_sdk_version_str());
+	strcpy(stpcpy(user_agent, "osc-sdk-c/"), osc_sdk_version_str());
 	e->region = getenv("OSC_REGION");
 	e->flag = flag;
 	endpoint = getenv("OSC_ENDPOINT_API");
