@@ -44,6 +44,20 @@
 #define AK_SIZE 20
 #define SK_SIZE 40
 
+#ifdef _WIN32
+
+
+static inline char* stpcpy(char *dest, const char *src)
+{
+	for (; *src; ++src) {
+		*dest++ = *src;
+	}
+	*dest = 0;
+	return dest;
+}
+
+#endif
+
 #ifdef WITH_DESCRIPTION
 
 static const char *calls_name[] = {
