@@ -106,7 +106,7 @@ const char *osc_find_args_description(const char *call_name)
 
 #endif  /* WITH_DESCRIPTION */
 
-static void *osc_realloc(void *buf, size_t l)
+void *osc_realloc(void *buf, size_t l)
 {
 	void *ret = realloc(buf, l);
 

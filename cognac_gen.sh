@@ -44,8 +44,7 @@ ${indent_plus}		s->$snake_a = 1;
 $indent_plus } else if (!strcasecmp(aa, "false")) {
 ${indent_plus}		s->$snake_a = 0;
 $indent_plus } else {
-${indent_plus}		fprintf(stderr, "$a require true/false\n");
-${indent_plus}		return 1;
+${indent_plus}		BAD_RET("$a require true/false\n");
 $indent_plus }
 $indent_base} else
 EOF
@@ -105,13 +104,10 @@ ${indent_plus}	      char *endptr;
 
 ${indent_plus}	      ++dot_pos;
 ${indent_plus}	      pos = strtoul(dot_pos, &endptr, 0);
-${indent_plus}	      if (endptr == dot_pos) {
-${indent_plus}		      fprintf(stderr, "'${a}' require an index (example $type.$a.0)\n");
-${indent_plus}		      return -1;
-${indent_plus}	      } else if (*endptr != '.') {
-${indent_plus}		      fprintf(stderr, "'${a}' require a .\n");
-${indent_plus}		      return -1;
-${indent_plus}	      }
+${indent_plus}	      if (endptr == dot_pos)
+${indent_plus}		      BAD_RET("'${a}' require an index (example $type.$a.0)\n");
+${indent_plus}	      else if (*endptr != '.')
+${indent_plus}		      BAD_RET("'${a}' require a .\n");
 ${indent_plus}	      TRY_ALLOC_AT(s,${snake_a}, pa, pos, sizeof(*s->${snake_a}));
 ${indent_plus}	      cascade_struct = &s->${snake_a}[pos];
 ${indent_plus}	      cascade_parser = ${sub_type}_parser;
@@ -286,14 +282,8 @@ EOF
  		           char *next_a = &av[i + 1][2];
 		           char *aa = i + 2 < ac ? av[i + 2] : 0;
 
-		      	   if (!cascade_struct) {
-		      	          fprintf(stderr, "cascade need to be se first\n");
-		      	      	  return 1;
-		      	   }
-			   if (!aa || aa[0] == '-') {
-			      	  fprintf(stderr, "cascade need an argument\n");
-		      	      	  return 1;
-			   }
+	      	           CHK_BAD_RET(!cascade_struct, "cascade need to be se first\n");
+			   CHK_BAD_RET(!aa || aa[0] == '-', "cascade need an argument\n");
 		      	   cascade_parser(cascade_struct, next_a, aa, pa);
 			   i += 2;
 		       	   goto ${snake_l}_arg;
@@ -323,18 +313,14 @@ EOF
 
 		cat <<EOF
 			    {
-				fprintf(stderr, "'%s' is not a valide argument for '$l'\n", next_a);
-				return 1;
+				BAD_RET("'%s' is not a valide argument for '$l'\n", next_a);
 			    }
 		            i += incr;
 			    goto ${snake_l}_arg;
 		     }
 		     cret = osc_$snake_l(&e, &r, &a);
             	     TRY(cret, "fail to call $l: %s\n", curl_easy_strerror(cret));
-		     if (!r.buf) {
-			    fprintf(stderr, "connection sucessful, but empty responce\n");
-			    return 1;
-		     }
+		     CHK_BAD_RET(!r.buf, "connection sucessful, but empty responce\n");
 		     if (program_flag & OAPI_RAW_OUTPUT)
 		             puts(r.buf);
 		     else {
