@@ -8,8 +8,6 @@ _mk_profiles()
 
     if [ -f ~/.osc/config.json ]; then
         PROFILES=$(cat ~/.osc/config.json | tr -d '\n:'  | sed 's/{[^{}]*}//g' | tr -d "{}\" " | sed 's/,/ /g')
-    elif [ -f ~/.osc_sdk/config.json ]; then
-        PROFILES=$(cat ~/.osc_sdk/config.json | tr -d '\n:'  | sed 's/{[^{}]*}//g' | tr -d "{}\" " | sed 's/,/ /g')
     fi
     for x in $PROFILES ; do echo --profile=$x ; done
 }

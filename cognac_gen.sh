@@ -337,20 +337,20 @@ EOF
 	    done
 	elif [ $have_func_protos == 0 ] ; then
 	    for l in $CALL_LIST; do
-		snake_l=$(to_snakecase <<< $l)
+		local snake_l=$(to_snakecase <<< $l)
 		echo "int osc_${snake_l}(struct osc_env *e, struct osc_str *out, struct osc_${snake_l}_arg *args);"
 	    done
 	elif [ $have_func_code == 0 ]; then
-	    for x in $CALL_LIST ;do
-		snake_x=$(to_snakecase <<< $x)
-		dashed_args=$(json-search ${x}Request <<< $OSC_API_JSON \
-				  | json-search -K properties  | tr -d "[]\"," \
-				  | sed '/^$/d;s/  / --/g' | tr -d "\n")
+	    for x in $CALL_LIST; do
+		     local snake_x=$(to_snakecase <<< $x)
+		     local args=$(json-search ${x}Request <<< $OSC_API_JSON \
+				      | json-search -K properties  | tr -d "[]\",")
+		     local dashed_args=$(sed '/^$/d;s/  / --/g' <<< $args | tr -d "\n")
 
 		while IFS= read -r fline
 		do
 		    grep ____construct_data____ <<< "$fline" > /dev/null
-		    have_construct_data=$?
+		    local have_construct_data=$?
 		    if [ $have_construct_data == 0 ]; then
 			./construct_data.${lang}.sh $x
 		    else
