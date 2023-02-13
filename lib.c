@@ -173,7 +173,10 @@ int osc_str_append_string(struct osc_str *osc_str, const char *str)
 }
 
 #define TRY(test,  ...)						\
-	if (test) fprintf(stderr, __VA_ARGS__); return -1;
+	if (test) { fprintf(stderr, __VA_ARGS__); return -1; }
+
+#define STRY(test,  ...)					\
+	if (test) return -1
 
 #define LOAD_CFG_GET_HOME(buf)						\
 	{								\

@@ -22,12 +22,9 @@ for x in $args ;do
 	cat <<EOF
 	if (args->is_set_$snake_x) {
 		if (count_args++ > 0)
-			if (osc_str_append_string(data, "," ))
-				return -1;
-		if (osc_str_append_string(data, "\"$x\\":" ))
-			return -1;
-                if (osc_str_append_bool(data, args->$snake_x))
-			return -1;
+			STRY(osc_str_append_string(data, "," ));
+		STRY(osc_str_append_string(data, "\"$x\\":" ));
+                STRY(osc_str_append_bool(data, args->$snake_x));
 	   	ret += 1;
 	}
 EOF
@@ -35,14 +32,10 @@ EOF
 	cat <<EOF
 	if (args->$snake_x) {
 		if (count_args++ > 0)
-			if (osc_str_append_string(data, "," ))
-				return -1;
-		if (osc_str_append_string(data, "\"$x\\":\"" ))
-			return -1;
-                if (osc_str_append_string(data, args->$snake_x))
-			return -1;
-		if (osc_str_append_string(data, "\"" ))
-			return -1;
+			STRY(osc_str_append_string(data, "," ));
+		STRY(osc_str_append_string(data, "\"$x\\":\"" ));
+                STRY(osc_str_append_string(data, args->$snake_x));
+		STRY(osc_str_append_string(data, "\"" ));
 	   	ret += 1;
 	}
 EOF
@@ -50,12 +43,9 @@ EOF
 	cat <<EOF
 	if (args->is_set_$snake_x || args->$snake_x) {
 		if (count_args++ > 0)
-			if (osc_str_append_string(data, "," ))
-				return -1;
-		if (osc_str_append_string(data, "\"$x\\":" ))
-			return -1;
-                if (osc_str_append_${t}(data, args->$snake_x))
-			return -1;
+			STRY(osc_str_append_string(data, "," ));
+		STRY(osc_str_append_string(data, "\"$x\\":" ));
+                STRY(osc_str_append_${t}(data, args->$snake_x));
 	   	ret += 1;
 	}
 EOF
@@ -65,32 +55,22 @@ EOF
 		char **as;
 
 		if (count_args++ > 0)
-			if (osc_str_append_string(data, "," ))
-				return -1;
-		if (osc_str_append_string(data, "\"$x\\":[" ))
-			return -1;
+			STRY(osc_str_append_string(data, "," ));
+		STRY(osc_str_append_string(data, "\"$x\\":[" ));
 		for (as = args->$snake_x; *as > 0; ++as) {
 			if (as != args->$snake_x)
-				if (osc_str_append_string(data, "," ))
-					return -1;
-			if (osc_str_append_string(data, "\"" ))
-				return -1;
-			if (osc_str_append_string(data, *as))
-				return -1;
-			if (osc_str_append_string(data, "\"" ))
-				return -1;
+				STRY(osc_str_append_string(data, "," ));
+			STRY(osc_str_append_string(data, "\"" ));
+			STRY(osc_str_append_string(data, *as));
+			STRY(osc_str_append_string(data, "\"" ));
 		}
-		if (osc_str_append_string(data, "]" ))
-			return -1;
+		STRY(osc_str_append_string(data, "]" ));
 		ret += 1;
 	} else if (args->${snake_x}_str) {
 		if (count_args++ > 0)
-			if (osc_str_append_string(data, "," ))
-				return -1;
-		if (osc_str_append_string(data, "\"$x\\":" ))
-			return -1;
-                if (osc_str_append_string(data, args->${snake_x}_str))
-			return -1;
+			STRY(osc_str_append_string(data, "," ));
+		STRY(osc_str_append_string(data, "\"$x\\":" ));
+                STRY(osc_str_append_string(data, args->${snake_x}_str));
 		ret += 1;
 	}
 EOF
@@ -106,28 +86,20 @@ EOF
 		$sub_t *ip;
 
 		if (count_args++ > 0)
-			if (osc_str_append_string(data, "," ))
-				return -1;
-		if (osc_str_append_string(data, "\"$x\\":[" ))
-			return -1;
+			STRY(osc_str_append_string(data, "," ));
+		STRY(osc_str_append_string(data, "\"$x\\":[" ));
 		for (ip = args->$snake_x; *ip > 0; ++ip) {
 			if (ip != args->$snake_x)
-				if (osc_str_append_string(data, "," ))
-					return -1;
-			if (osc_str_append_${sub_t}(data, *ip))
-				return -1;
+				STRY(osc_str_append_string(data, "," ));
+			STRY(osc_str_append_${sub_t}(data, *ip));
 		}
-		if (osc_str_append_string(data, "]" ))
-			return -1;
+		STRY(osc_str_append_string(data, "]" ));
 		ret += 1;
 	} else if (args->${snake_x}_str) {
 		if (count_args++ > 0)
-			if (osc_str_append_string(data, "," ))
-				return -1;
-		if (osc_str_append_string(data, "\"$x\\":" ))
-			return -1;
-                if (osc_str_append_string(data, args->${snake_x}_str))
-			return -1;
+			STRY(osc_str_append_string(data, "," ));
+		STRY(osc_str_append_string(data, "\"$x\\":" ));
+                STRY(osc_str_append_string(data, args->${snake_x}_str));
 		ret += 1;
 	}
 EOF
@@ -137,23 +109,16 @@ EOF
 	cat <<EOF
 	if (args->${snake_x}_str) {
 		if (count_args++ > 0)
-			if (osc_str_append_string(data, "," ))
-				return -1;
-		if (osc_str_append_string(data, "\"$x\\":" ))
-			return -1;
-                if (osc_str_append_string(data, args->${snake_x}_str))
-			return -1;
+			STRY(osc_str_append_string(data, "," ));
+		STRY(osc_str_append_string(data, "\"$x\\":" ));
+                STRY(osc_str_append_string(data, args->${snake_x}_str));
 		ret += 1;
 	} else if (args->is_set_$snake_x) {
 	       if (count_args++ > 0)
-		       if (osc_str_append_string(data, "," ))
-			       return -1;
-	       if (osc_str_append_string(data, "\"$x\": { " ))
-			return -1;
-	       if (${type}_setter(&args->${snake_x}, data) < 0)
-	       	  	return -1;
-	       if (osc_str_append_string(data, "}" ))
-			return -1;
+		       STRY(osc_str_append_string(data, "," ));
+	       STRY(osc_str_append_string(data, "\"$x\": { " ));
+	       STRY(${type}_setter(&args->${snake_x}, data) < 0);
+	       STRY(osc_str_append_string(data, "}" ));
 	       ret += 1;
 	}
 EOF
@@ -167,24 +132,17 @@ EOF
 	    cat <<EOF
         if (args->$snake_x) {
 	       	if (count_args++ > 0)
-			if (osc_str_append_string(data, "," ))
-				return -1;
-		if (osc_str_append_string(data, "\"$x\\":[" ))
-			return -1;
+			STRY(osc_str_append_string(data, "," ));
+		STRY(osc_str_append_string(data, "\"$x\\":[" ));
 		for (int i = 0; i < args->nb_${snake_x}; ++i) {
 	       	    struct ${type} *p = &args->$snake_x[i];
 		    if (p != args->$snake_x)
-		        if (osc_str_append_string(data, "," ))
-			     return -1;
-		    if (osc_str_append_string(data, "{ " ))
-			return -1;
-	       	    if (${type}_setter(p, data) < 0)
-	       	  	return -1;
-	       	    if (osc_str_append_string(data, "}" ))
-			return -1;
+		        STRY(osc_str_append_string(data, "," ));
+		    STRY(osc_str_append_string(data, "{ " ));
+	       	    STRY(${type}_setter(p, data) < 0);
+	       	    STRY(osc_str_append_string(data, "}" ));
 		}
-		if (osc_str_append_string(data, "]" ))
-			return -1;
+		STRY(osc_str_append_string(data, "]" ));
 		ret += 1;
 	} else
 EOF
@@ -192,12 +150,9 @@ EOF
 	cat <<EOF
 	if (args->$snake_x${suffix}) {
 		if (count_args++ > 0)
-			if (osc_str_append_string(data, "," ))
-				return -1;
-		if (osc_str_append_string(data, "\"$x\\":" ))
-			return -1;
-                if (osc_str_append_string(data, args->${snake_x}${suffix}))
-			return -1;
+			STRY(osc_str_append_string(data, "," ));
+		STRY(osc_str_append_string(data, "\"$x\\":" ));
+                STRY(osc_str_append_string(data, args->${snake_x}${suffix}));
 		ret += 1;
 	}
 EOF
