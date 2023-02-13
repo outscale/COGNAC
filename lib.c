@@ -439,15 +439,20 @@ int osc_init_sdk(struct osc_env *e, const char *profile, unsigned int flag)
 	} else if (e->auth_method == OSC_PASSWORD_METHOD) {
 		time_t clock;
 		struct tm tm;
+		struct tm *tmp;
 		char time_hdr[TIME_HDR_KEY_L + TIMESTAMP_SIZE] = TIME_HDR_KEY;
 
 		time(&clock);
-		if (!gmtime_r(&clock, &tm)) {
-			fprintf(stderr, "gmtime_r fail\n");
-			return -1;
-		}
+#ifdef SAFE_C
+		TRY(!gmtime_r(&clock, &tm), "gmtime_r fail\n");
+		tmp = &tm;
+#else
+		(void)tm;
+		tmp = gmtime(&clock);
+		CHK_BAD_RET(!tmp, &clock);
+#endif
 		strftime(time_hdr + TIME_HDR_KEY_L - 1,
-			 TIMESTAMP_SIZE, "%Y%m%dT%H%M%SZ", &tm);
+			 TIMESTAMP_SIZE, "%Y%m%dT%H%M%SZ", tmp);
 		e->headers = curl_slist_append(e->headers, time_hdr);
 	}
 	curl_easy_setopt(e->c, CURLOPT_HTTPHEADER, e->headers);
