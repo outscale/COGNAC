@@ -13,6 +13,51 @@ shopt -s expand_aliases
 
 source ./helper.sh
 
+dash_this_arg()
+{
+    local cur="$1"
+    local st_info="$2"
+    local arg="$3"
+
+    local t=$(get_type3 "$st_info" $st_arg)
+    cur="$cur.$arg"
+    if [ "ref" == $( echo "$t" | cut -d ' ' -f 1) ]; then
+	local st=$( echo $t | cut -f 2 -d ' ' )
+	local st_info=$(jq .components.schemas.$st <<< $OSC_API_JSON)
+	local st_args=$(json-search -K properties <<< "$st_info"- | tr -d '"[],')
+
+	for st_arg in $st_args; do
+	    dash_this_arg "$cur" "$st_info" $st_arg
+	    echo -n ' '
+	done
+    else
+	echo -n $cur
+    fi
+}
+
+dash_this()
+{
+    local x=$1
+    local arg=$2
+    local t=$(get_type $x $arg)
+
+
+    if [ "ref" == $( echo "$t" | cut -d ' ' -f 1) ]; then
+	local st=$( echo $t | cut -f 2 -d ' ' )
+	local st_info=$(jq .components.schemas.$st <<< $OSC_API_JSON)
+	local st_args=$(json-search -K properties <<< "$st_info"- | tr -d '"[],')
+
+	for st_arg in $st_args; do
+	    local tt=$(get_type3 "$st_info" $st_arg)
+
+	    dashed_args="$dashed_args $(dash_this_arg --$arg "$st_info" $st_arg)"
+	done
+    else
+	dashed_args="$dashed_args --$arg"
+    fi
+
+}
+
 cli_c_type_parser()
 {
     a=$1
@@ -342,10 +387,13 @@ EOF
 	    done
 	elif [ $have_func_code == 0 ]; then
 	    for x in $CALL_LIST; do
-		     local snake_x=$(to_snakecase <<< $x)
-		     local args=$(json-search ${x}Request <<< $OSC_API_JSON \
-				      | json-search -K properties  | tr -d "[]\",")
-		     local dashed_args=$(sed '/^$/d;s/  / --/g' <<< $args | tr -d "\n")
+		local snake_x=$(to_snakecase <<< $x)
+		local args=$(json-search ${x}Request <<< $OSC_API_JSON \
+				 | json-search -K properties  | tr -d "[]\",")
+		dashed_args=""
+		for arg in $args; do
+		    dash_this "$x" "$arg"
+		done
 
 		while IFS= read -r fline
 		do
