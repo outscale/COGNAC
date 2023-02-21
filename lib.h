@@ -56,8 +56,6 @@ extern "C" {
 #define SAFE_C 1
 #endif
 
-
-
 struct osc_str {
 	int len;
 	char *buf;
@@ -70,7 +68,6 @@ struct osc_str {
 #define OSC_ENV_FREE_CERT 1 << 4
 #define OSC_ENV_FREE_SSLKEY 1 << 5
 #define OSC_ENV_FREE_SK 1 << 6
-#define OSC_ENV_PASSWORD_AUTH 1 << 7 /* force password/login usage */
 
 #define OSC_ENV_FREE_AK_SK (OSC_ENV_FREE_AK | OSC_ENV_FREE_SK)
 
@@ -79,7 +76,14 @@ struct osc_str {
 
 enum osc_auth_method {
 	OSC_AKSK_METHOD,
-	OSC_PASSWORD_METHOD
+	OSC_PASSWORD_METHOD,
+	OSC_NONE_METHOD
+};
+
+struct osc_env_conf {
+	char *login;
+	char *password;
+	enum osc_auth_method auth_method;
 };
 
 struct osc_env {
@@ -133,6 +137,8 @@ int osc_load_cert_from_conf(const char *profile, char **cert_path,
 void osc_init_str(struct osc_str *r);
 void osc_deinit_str(struct osc_str *r);
 int osc_init_sdk(struct osc_env *e, const char *profile, unsigned int flag);
+int osc_init_sdk_ext(struct osc_env *e, const char *profile,
+		     unsigned int flag, struct osc_env_conf *cfg);
 void osc_deinit_sdk(struct osc_env *e);
 
 /*
