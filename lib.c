@@ -328,7 +328,8 @@ int osc_sdk_set_useragent(struct osc_env *e, const char *str)
 	return curl_easy_setopt(e->c, CURLOPT_USERAGENT, str);
 }
 
-int osc_init_sdk(struct osc_env *e, const char *profile, unsigned int flag)
+int osc_init_sdk_ext(struct osc_env *e, const char *profile, unsigned int flag,
+		     struct osc_env_conf *cfg)
 {
 	char *ca = getenv("CURL_CA_BUNDLE");
 	char *endpoint;
@@ -340,14 +341,15 @@ int osc_init_sdk(struct osc_env *e, const char *profile, unsigned int flag)
 	strcpy(stpcpy(user_agent, "osc-sdk-c/"), osc_sdk_version_str());
 	e->region = getenv("OSC_REGION");
 	e->flag = flag;
-	e->auth_method = flag & OSC_ENV_PASSWORD_AUTH ? OSC_PASSWORD_METHOD :
-		OSC_AKSK_METHOD;
+	e->auth_method = cfg ? cfg->auth_method : OSC_AKSK_METHOD;
 	endpoint = getenv("OSC_ENDPOINT_API");
 	osc_init_str(&e->endpoint);
 
-	if (auth && (!strcmp(auth, "password") || !strcmp(auth, "basic")))
+	if (auth && (!strcmp(auth, "password") || !strcmp(auth, "basic"))) {
 		e->auth_method = OSC_PASSWORD_METHOD;
-	else if (auth && strcmp(auth, "accesskey")) {
+	} else if (auth && !strcmp(auth, "none")) {
+		e->auth_method = OSC_NONE_METHOD;
+	} else if (auth && strcmp(auth, "accesskey")) {
 		fprintf(stderr, "'%s' invalid authentication method\n", auth);
 		return -1;
 	}
@@ -363,7 +365,6 @@ int osc_init_sdk(struct osc_env *e, const char *profile, unsigned int flag)
 		}
 		if (!profile && (!e->ak || !e->sk))
 			profile = "default";
-
 	}
 
 	if (profile) {
@@ -464,10 +465,18 @@ int osc_init_sdk(struct osc_env *e, const char *profile, unsigned int flag)
 		e->headers = curl_slist_append(e->headers, time_hdr);
 	}
 	curl_easy_setopt(e->c, CURLOPT_HTTPHEADER, e->headers);
-	curl_easy_setopt(e->c, CURLOPT_USERNAME, e->ak);
-	curl_easy_setopt(e->c, CURLOPT_PASSWORD, e->sk);
+
+	if (e->auth_method != OSC_NONE_METHOD) {
+		curl_easy_setopt(e->c, CURLOPT_USERNAME, e->ak);
+		curl_easy_setopt(e->c, CURLOPT_PASSWORD, e->sk);
+	}
 
 	return 0;
+}
+
+int osc_init_sdk(struct osc_env *e, const char *profile, unsigned int flag)
+{
+	return osc_init_sdk_ext(e, profile, flag, NULL);
 }
 
 void osc_deinit_sdk(struct osc_env *e)

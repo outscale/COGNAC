@@ -85,6 +85,7 @@ int main(int ac, char **av)
 	unsigned int program_flag = 0;
 	char *program_name = strrchr(av[0], '/');
 	char *profile =  NULL;
+	enum osc_auth_method auth_m = OSC_AKSK_METHOD;
 	int ret = 1;
 
 	if (!program_name)
@@ -101,7 +102,7 @@ int main(int ac, char **av)
 		} else if (!strcmp("--raw-print", av[i])) {
 		  flag |= OAPI_RAW_OUTPUT;
 		} else if (!strcmp("--auth-password", av[i])) {
-		  flag |= OSC_ENV_PASSWORD_AUTH;
+		  auth_m = OSC_PASSWORD_METHOD;
 		} else if (!argcmp2("--profile", av[i], '=')) {
 			if (av[i][sizeof("--profile") - 1] == '=') {
 				profile = &av[i][sizeof("--profile")];
@@ -118,7 +119,9 @@ int main(int ac, char **av)
 			}
 		}
 	}
-	TRY(osc_init_sdk(&e, profile, flag), "fail to init C sdk\n");
+	TRY(osc_init_sdk_ext(&e, profile, flag,
+			     &(struct osc_env_conf){.auth_method=auth_m}),
+	    "fail to init C sdk\n");
 	osc_init_str(&r);
 
 	if (ac < 2) {
