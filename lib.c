@@ -199,20 +199,27 @@ int osc_load_ak_sk_from_conf(const char *profile, char **ak, char **sk)
 	char buf[1024];
 	struct json_object *js, *ak_js, *sk_js;
 
+	if (!ak && !sk)
+		return 0;
 	LOAD_CFG_GET_HOME(buf);
-	*sk = NULL;
-	*ak = NULL;
+	if (sk)
+		*sk = NULL;
+	if (ak)
+		*ak = NULL;
 	js = json_object_from_file(buf);
 	TRY(!js, "can't open %s\n", buf);
 	js = json_object_object_get(js, profile);
 	TRY(!js, "can't find profile %s\n", profile);
-	ak_js = json_object_object_get(js, "access_key");
-	TRY(!ak_js, "can't find 'access_key' in profile '%s'\n", profile);
-	sk_js = json_object_object_get(js, "secret_key");
-	TRY(!sk_js, "can't find 'secret_key' in profile '%s'\n", profile);
-
-	*ak = strdup(json_object_get_string(json_object_object_get(js, "access_key")));
-	*sk = strdup(json_object_get_string(json_object_object_get(js, "secret_key")));
+	if (ak) {
+		ak_js = json_object_object_get(js, "access_key");
+		TRY(!ak_js, "can't find 'access_key' in profile '%s'\n", profile);
+		*ak = strdup(json_object_get_string(json_object_object_get(js, "access_key")));
+	}
+	if (sk) {
+		sk_js = json_object_object_get(js, "secret_key");
+		TRY(!sk_js, "can't find 'secret_key' in profile '%s'\n", profile);
+		*sk = strdup(json_object_get_string(json_object_object_get(js, "secret_key")));
+	}
 	return 0;
 }
 
@@ -222,22 +229,30 @@ int osc_load_loging_password_from_conf(const char *profile,
 	char buf[1024];
 	struct json_object *js, *login_js, *pass_js;
 
-	LOAD_CFG_GET_HOME(buf)
-	*password = NULL;
-	*email = NULL;
+	if (!email && !password)
+		return 0;
+	LOAD_CFG_GET_HOME(buf);
+	if (password)
+		*password = NULL;
+	if (email)
+		*email = NULL;
 	js = json_object_from_file(buf);
 	TRY(!js, "can't open %s\n", buf);
 	js = json_object_object_get(js, profile);
 	TRY(!js, "can't find profile '%s'\n", profile);
-	login_js = json_object_object_get(js, "login");
-	TRY(!login_js, "can't find 'login' in profile '%s'\n", profile);
-	*email = strdup(json_object_get_string(login_js));
-
-	pass_js = json_object_object_get(js, "password");
-	if (!pass_js) {
-		return 0; /* is optional */
+	if (email) {
+		login_js = json_object_object_get(js, "login");
+		TRY(!login_js, "can't find 'login' in profile '%s'\n", profile);
+		*email = strdup(json_object_get_string(login_js));
 	}
-	*password = strdup(json_object_get_string(pass_js));
+
+	if (password) {
+		pass_js = json_object_object_get(js, "password");
+		if (!pass_js) {
+			return 0; /* is optional */
+		}
+		*password = strdup(json_object_get_string(pass_js));
+	}
 	return 0;
 }
 
@@ -328,6 +343,20 @@ int osc_sdk_set_useragent(struct osc_env *e, const char *str)
 	return curl_easy_setopt(e->c, CURLOPT_USERAGENT, str);
 }
 
+static inline char *cfg_login(struct osc_env_conf *cfg)
+{
+	if (!cfg)
+		return NULL;
+	return cfg->login;
+}
+
+static inline char *cfg_pass(struct osc_env_conf *cfg)
+{
+	if (!cfg)
+		return NULL;
+	return cfg->password;
+}
+
 int osc_init_sdk_ext(struct osc_env *e, const char *profile, unsigned int flag,
 		     struct osc_env_conf *cfg)
 {
@@ -337,6 +366,8 @@ int osc_init_sdk_ext(struct osc_env *e, const char *profile, unsigned int flag,
 	char *cert = getenv("OSC_X509_CLIENT_CERT");
 	char *sslkey = getenv("OSC_X509_CLIENT_KEY");
 	char *auth = getenv("OSC_AUTH_METHOD");
+	char *force_log = cfg_login(cfg);
+	char *force_pass = cfg_pass(cfg);
 
 	strcpy(stpcpy(user_agent, "osc-sdk-c/"), osc_sdk_version_str());
 	e->region = getenv("OSC_REGION");
@@ -354,14 +385,22 @@ int osc_init_sdk_ext(struct osc_env *e, const char *profile, unsigned int flag,
 		return -1;
 	}
 
+	if (force_log)
+		e->ak = force_log;
+	if (force_pass)
+		e->sk = force_pass;
 	if (!profile) {
 		profile = getenv("OSC_PROFILE");
 		if (e->auth_method == OSC_PASSWORD_METHOD) {
-			e->ak = getenv("OSC_LOGIN");
-			e->sk = getenv("OSC_PASSWORD");
+			if (!force_log)
+				e->ak = getenv("OSC_LOGIN");
+			if (!force_pass)
+				e->sk =  getenv("OSC_PASSWORD");
 		} else {
-			e->ak = getenv("OSC_ACCESS_KEY");
-			e->sk = getenv("OSC_SECRET_KEY");
+			if (!force_log)
+				e->ak = getenv("OSC_ACCESS_KEY");
+			if (!force_pass)
+				e->sk = getenv("OSC_SECRET_KEY");
 		}
 		if (!profile && (!e->ak || !e->sk))
 			profile = "default";
@@ -371,19 +410,25 @@ int osc_init_sdk_ext(struct osc_env *e, const char *profile, unsigned int flag,
 		int f;
 
 		if (e->auth_method == OSC_PASSWORD_METHOD) {
-			if (osc_load_loging_password_from_conf(profile, &e->ak,
-							       &e->sk) < 0)
-				return -1;
-			e->flag |= OSC_ENV_FREE_AK;
-			if (!e->sk)
-				e->sk = getenv("OSC_PASSWORD");
-			else
-				e->flag |= OSC_ENV_FREE_SK;
+			STRY(osc_load_loging_password_from_conf(
+				    profile, force_log ? NULL : &e->ak,
+				    force_pass ? NULL : &e->sk) < 0);
+			if (!force_log)
+				e->flag |= OSC_ENV_FREE_AK;
+			if (!force_pass) {
+				if (!e->sk)
+					e->sk = getenv("OSC_PASSWORD");
+				else
+					e->flag |= OSC_ENV_FREE_SK;
+			}
 		} else {
-			if (osc_load_ak_sk_from_conf(profile, &e->ak,
-						     &e->sk) < 0)
-				return -1;
-			e->flag |= OSC_ENV_FREE_AK_SK;
+			STRY(osc_load_ak_sk_from_conf(
+				    profile, force_log ? NULL : &e->ak,
+				    force_pass ? NULL : &e->sk) < 0);
+			if (!force_log)
+				e->flag |= OSC_ENV_FREE_AK;
+			if (!force_pass)
+				e->flag |= OSC_ENV_FREE_SK;
 		}
 		if (!osc_load_region_from_conf(profile, &e->region))
 			e->flag |= OSC_ENV_FREE_REGION;
