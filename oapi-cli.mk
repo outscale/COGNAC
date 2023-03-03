@@ -6,7 +6,7 @@ appimagetool-x86_64.AppImage:
 	wget https://github.com/AppImage/AppImageKit/releases/download/12/appimagetool-x86_64.AppImage
 	chmod +x appimagetool-x86_64.AppImage
 
-oapi-cli-x86_64.AppImage: oapi-cli oapi-cli-completion.bash appimagetool-x86_64.AppImage
+oapi-cli-x86_64.AppImage: oapi-cli appimagetool-x86_64.AppImage
 	mkdir -p oapi-cli.AppDir/usr/
 	mkdir -p oapi-cli.AppDir/usr/bin/
 	mkdir -p oapi-cli.AppDir/usr/lib/

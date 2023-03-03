@@ -9,6 +9,7 @@ config.mk:
 	@exit 1
 
 OAPI_RULE_DEPEDENCIES=main.c osc_sdk.h osc_sdk.c main-helper.h
+OAPI_APPIMAGE_RULE_DEPEDENCIES=oapi-cli-completion.bash
 
 list_api_version:
 	curl -s https://api.github.com/repos/outscale/osc-api/tags | $(JSON_SEARCH) -R name
