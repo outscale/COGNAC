@@ -13,4 +13,4 @@ oapi-cli-x86_64.AppImage: oapi-cli appimagetool-x86_64.AppImage
 	cp oapi-cli oapi-cli.AppDir/usr/bin/
 	cp oapi-cli-completion.bash oapi-cli.AppDir/usr/bin/
 	LD_LIBRARY_PATH="$(LD_LIB_PATH)" ./cp-lib.sh oapi-cli ./oapi-cli.AppDir/usr/lib/
-	./appimagetool-x86_64.AppImage oapi-cli.AppDir
+	./appimagetool-x86_64.AppImage $(APPIMAGETOOL_OPTION) oapi-cli.AppDir
