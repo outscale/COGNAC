@@ -9,7 +9,7 @@ appimagetool-x86_64.AppImage:
 oapi-cli-x86_64.AppImage: oapi-cli appimagetool-x86_64.AppImage
 	mkdir -p oapi-cli.AppDir/usr/
 	install -D $$(curl-config --ca) oapi-cli.AppDir/$$(curl-config --ca)
-	echo export CURL_CA_BUNDLE=\${APPDIR}/$$(curl-config --ca) > oapi-cli.AppDir/import-ssl.sh
+	echo export CURL_CA_BUNDLE='$${APPDIR}'/$$(curl-config --ca) > oapi-cli.AppDir/import-ssl.sh
 	mkdir -p oapi-cli.AppDir/usr/bin/
 	mkdir -p oapi-cli.AppDir/usr/lib/
 	cp oapi-cli oapi-cli.AppDir/usr/bin/
