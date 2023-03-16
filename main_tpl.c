@@ -186,18 +186,18 @@ int main(int ac, char **av)
 
 	if (ac < 2 || (ac == 2 && !strcmp(av[1], "--help"))) {
 	show_help:
-		printf("Usage: %s [--help] CallName [options] [--Params ParamArgument]\n"
-		       "options:\n"
-		       "\t--insecure	\tdoesn't verify SSL certificats\n"
-		       "\t--raw-print	\tdoesn't format the output\n"
-		       "\t--config=PATH		\tconfig file path\n"
-		       "\t--authentication_method=METHODE\tset authentification method,  password|accesskey|none\n"
-		       "\t--verbose	\tcurl backend is now verbose\n"
-		       "\t--profile=PROFILE	\tselect profile\n"
-		       "\t--login=EMAIL		\tset email, and authentification as password\n"
-		       "\t--password=PASS	\tset password, and authentification as password\n"
-		       "\t--help [CallName]\tthis, can be used with call name, example:\n\t\t\t\t%s --help ReadVms\n"
-		       "\t--color	\t\ttry to colorize json if json-c support it\n%s%s",
+                printf("Usage: %s [--help] CallName [options] [--Params ParamArgument]\n"
+                       "options:\n"
+                       "\t--authentication_method=METHODE       set authentification method,  password|accesskey|none\n"
+                       "\t--color               try to colorize json if json-c support it\n%s%s",
+                       "\t--config=PATH         config file path\n"
+                       "\t--help [CallName]     this, can be used with call name, example:\n\t\t\t\t%s --help ReadVms\n"
+                       "\t--insecure		doesn't verify SSL certificats\n"
+                       "\t--login=EMAIL         set email, and authentification as password\n"
+                       "\t--password=PASS       set password, and authentification as password\n"
+                       "\t--profile=PROFILE     select profile\n"
+                       "\t--raw-print           doesn't format the output\n"
+                       "\t--verbose             curl backend is now verbose\n"
 		       program_name, program_name, help_appent ? help_appent : "",
 		       help_appent ? "\n" : "");
 		return 0;
