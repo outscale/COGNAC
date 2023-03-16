@@ -189,7 +189,7 @@ int main(int ac, char **av)
                 printf("Usage: %s [--help] CallName [options] [--Params ParamArgument]\n"
                        "options:\n"
                        "\t--authentication_method=METHODE       set authentification method,  password|accesskey|none\n"
-                       "\t--color               try to colorize json if json-c support it\n%s%s",
+                       "\t--color               try to colorize json if json-c support it\n"
                        "\t--config=PATH         config file path\n"
                        "\t--help [CallName]     this, can be used with call name, example:\n\t\t\t\t%s --help ReadVms\n"
                        "\t--insecure		doesn't verify SSL certificats\n"
@@ -197,7 +197,7 @@ int main(int ac, char **av)
                        "\t--password=PASS       set password, and authentification as password\n"
                        "\t--profile=PROFILE     select profile\n"
                        "\t--raw-print           doesn't format the output\n"
-                       "\t--verbose             curl backend is now verbose\n"
+                       "\t--verbose             curl backend is now verbose\n%s%s",
 		       program_name, program_name, help_appent ? help_appent : "",
 		       help_appent ? "\n" : "");
 		return 0;
