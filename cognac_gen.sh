@@ -358,7 +358,7 @@ EOF
 
 		cat <<EOF
 			    {
-				BAD_RET("'%s' is not a valide argument for '$l'\n", next_a);
+				BAD_RET("'%s' is not a valid argument for '$l'\n", next_a);
 			    }
 		            i += incr;
 			    goto ${snake_l}_arg;
