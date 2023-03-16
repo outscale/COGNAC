@@ -88,7 +88,7 @@ const char *osc_find_description(const char *call_name)
 	const char **c;
 	int i = 0;
 
-	for (c = calls_name; c; ++c) {
+	for (c = calls_name; *c; ++c) {
 		if (!strcmp(*c, call_name))
 			return calls_descriptions[i];
 		++i;
@@ -101,7 +101,7 @@ const char *osc_find_args_description(const char *call_name)
 	const char **c;
 	int i = 0;
 
-	for (c = calls_name; c; ++c) {
+	for (c = calls_name; *c; ++c) {
 		if (!strcmp(*c, call_name))
 			return calls_args_descriptions[i];
 		++i;
