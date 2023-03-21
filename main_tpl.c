@@ -77,7 +77,7 @@ static int (*cascade_parser)(void *, char *, char *, struct ptr_array *);
 ____complex_struct_func_parser____
 
 
-static int str_profile_to_int(const char *str)
+static int str_auth_method_to_int(const char *str)
 {
 	if (!strcmp(str, "password") || !strcmp(str, "basic"))
 		return OSC_PASSWORD_METHOD;
@@ -116,6 +116,8 @@ int main(int ac, char **av)
 		  flag |= OSC_INSECURE_MODE;
 		} else if (!strcmp("--raw-print", av[i])) {
 		  flag |= OAPI_RAW_OUTPUT;
+		} else if (!strcmp("--help", av[i])) {
+		  auth_m = OSC_NONE_METHOD;
 		} else if (!argcmp2("--auth-method", av[i], '=')) {
 			const char *auth_str;
 			if (av[i][sizeof("--auth-method") - 1] == '=') {
@@ -128,7 +130,7 @@ int main(int ac, char **av)
 				fprintf(stderr, "--auth-method seems weirds\n");
 				return 1;
 			}
-			auth_m = str_profile_to_int(auth_str);
+			auth_m = str_auth_method_to_int(auth_str);
 			TRY(auth_m < 0, "%s unknow auth-method\n", auth_str);
 		} else if (!argcmp2("--authentication_method", av[i], '=')) {
 			const char *auth_str;
@@ -142,7 +144,7 @@ int main(int ac, char **av)
 				fprintf(stderr, "--authentication_method seems weirds\n");
 				return 1;
 			}
-			auth_m = str_profile_to_int(auth_str);
+			auth_m = str_auth_method_to_int(auth_str);
 			TRY(auth_m < 0, "%s unknow authentication_method\n", auth_str);
 		} else if (!argcmp2("--config", av[i], '=')) {
 			const char *cfg_str;

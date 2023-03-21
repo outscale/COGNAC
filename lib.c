@@ -447,7 +447,7 @@ int osc_init_sdk_ext(struct osc_env *e, const char *profile, unsigned int flag,
 		e->ak = force_log;
 	if (force_pass)
 		e->sk = force_pass;
-	if (!profile) {
+	if (!profile && e->auth_method != OSC_NONE_METHOD) {
 		profile = getenv("OSC_PROFILE");
 		if (e->auth_method == OSC_PASSWORD_METHOD) {
 			if (!force_log)
@@ -464,7 +464,7 @@ int osc_init_sdk_ext(struct osc_env *e, const char *profile, unsigned int flag,
 			profile = "default";
 	}
 
-	if (profile) {
+	if (profile && e->auth_method != OSC_NONE_METHOD) {
 		int f;
 
 		if (e->auth_method == OSC_PASSWORD_METHOD) {
@@ -556,7 +556,7 @@ int osc_init_sdk_ext(struct osc_env *e, const char *profile, unsigned int flag,
 
 		time(&clock);
 #if SAFE_C == 1
-		TRY(!gmtime_r(&clock, &tm), "gmtime_r fail\n");
+		TRY(!gmtime_r(&clock, &tm), "gmtime_r fail\n");\
 		tmp = &tm;
 #else
 		(void)tm;
