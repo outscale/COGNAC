@@ -2,12 +2,12 @@ source ./config.sh
 
 OSC_API_JSON=$(cat ./osc-api.json)
 
-get_type3() {
-    st_info="$1"
-    arg="$2"
-    arg_info=$(json-search $arg <<< $st_info)
-    types=$(jq -r .type 2> /dev/null <<< $arg_info)
-    have_type=$?
+get_type_direct() {
+    arg_info="$1"
+    local types=$(jq -r .type 2> /dev/null <<< $arg_info)
+    local have_type=$?
+    local one_of=$(jq -r .oneOf 2> /dev/null <<< $arg_info)
+    local have_one_of=$?
     if [ $have_type == 0 -a "$types" != 'null' ]; then
 	if [ "$types" == 'integer' ]; then
 	    echo int
@@ -36,9 +36,19 @@ get_type3() {
 	    fi
 	fi
 	echo $types
+    elif [ $have_one_of == 0 -a "$one_of" != 'null'  ]; then
+	local the_one=$(jq .[0] <<< $one_of)
+	get_type_direct "$the_one"
     else
 	echo ref $(json-search -R '$ref' <<< ${arg_info} | cut  -d '/' -f 4)
     fi
+}
+
+get_type3() {
+    st_info="$1"
+    arg="$2"
+    arg_info=$(json-search $arg <<< $st_info)
+    get_type_direct "$arg_info"
     return 0
 }
 
