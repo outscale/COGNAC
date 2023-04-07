@@ -54,6 +54,7 @@
 		if (f) {fprintf(stderr, args);  return 1;}	\
 	} while(0)
 
+
 static int argcmp2(const char *s1, const char *s2, char dst)
 {
 	while (*s1 == *s2 && *s1 && *s2) {
@@ -63,7 +64,7 @@ static int argcmp2(const char *s1, const char *s2, char dst)
 	if ((*s2 == dst && *s1 == '\0') ||
 	    (*s1 == dst && *s2 == '\0'))
 		return 0;
-	return *s1 != *s2;
+	return *s1 - *s2;
 }
 
 static int argcmp(const char *s1, const char *s2)

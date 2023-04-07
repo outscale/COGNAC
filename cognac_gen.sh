@@ -105,7 +105,7 @@ EOF
 	cat <<EOF
 ${indent_plus}	 TRY(!aa, "$a argument missing\n");
 ${indent_plus}   s->${snake_a}_str = aa;
-$indent_base } else if (!strcmp(str, "$a[]")) {
+$indent_base } else if (!(aret = strcmp(str, "$a[]")) || aret == '=') {
 ${indent_plus}   TRY(!aa, "$a[] argument missing\n");
 ${indent_plus}   SET_NEXT(s->${snake_a}, ${convertor}(aa), pa);
 $indent_base } else
@@ -286,11 +286,12 @@ EOF
 		echo  "int ${struct_name}_parser(void *v_s, char *str, char *aa, struct ptr_array *pa) {"
 		A_LST=$(jq .components.schemas.$s <<<  $OSC_API_JSON | json-search -K properties | tr -d '",[]')
 		echo "	    struct $struct_name *s = v_s;"
+		echo "	    int aret = 0;"
 		for a in $A_LST; do
 		    t=$(get_type2 "$s" "$a")
 		    snake_n=$(to_snakecase <<< $a)
 
-		    echo "	if (!argcmp(str, \"$a\")) {"
+		    echo "	if ((aret = argcmp(str, \"$a\")) == 0 || aret == '=') {"
 		    cli_c_type_parser "$a" "$t" "        "
 		done
 		cat <<EOF
@@ -326,11 +327,19 @@ EOF
 		     if (i + 1 < ac && av[i + 1][0] == '.' && av[i + 1][1] == '.') {
  		           char *next_a = &av[i + 1][2];
 		           char *aa = i + 2 < ac ? av[i + 2] : 0;
+			   int incr = 2;
+			   char *eq_ptr = strchr(next_a, '=');
 
 	      	           CHK_BAD_RET(!cascade_struct, "cascade need to be se first\n");
-			   CHK_BAD_RET(!aa || aa[0] == '-', "cascade need an argument\n");
+			   if (eq_ptr) {
+			      	  CHK_BAD_RET(!*eq_ptr, "cascade need an argument\n");
+			      	  incr = 1;
+				  aa = eq_ptr + 1;
+			   } else {
+			     	  CHK_BAD_RET(!aa || aa[0] == '-', "cascade need an argument\n");
+			   }
 		      	   cascade_parser(cascade_struct, next_a, aa, pa);
-			   i += 2;
+			   i += incr;
 		       	   goto ${snake_l}_arg;
 		      }
 
@@ -338,6 +347,7 @@ EOF
  		             char *next_a = &av[i + 1][2];
 			     char *str = next_a;
  		     	     char *aa = i + 2 < ac ? av[i + 2] : 0;
+			     int aret = 0;
 			     int incr = aa ? 2 : 1;
 
 			     if (aa && aa[0] == '-' && aa[1] == '-' && aa[2] != '-') {
@@ -351,7 +361,13 @@ EOF
 		    snake_a=$(to_snakecase <<< $a)
 
 		    cat <<EOF
-			      if (!argcmp(next_a, "$a") ) {
+			      if ((aret = argcmp(next_a, "$a")) == 0 || aret == '=' ) {
+			      	 char *eq_ptr = strchr(next_a, '=');
+			      	 if (eq_ptr) {
+				    TRY((!*eq_ptr), "$a argument missing\n");
+				    aa = eq_ptr + 1;
+				    incr = 1;
+				 }
 EOF
 		    cli_c_type_parser "$a" "$type" "				      "
 		done
