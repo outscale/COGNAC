@@ -60,8 +60,32 @@ get_type2() {
     get_type3 "$st_info" "$arg"
 }
 
-get_type_description() {
+get_type_description_() {
     echo "$1" | jq .properties.$2.description
+}
+
+get_sub_type_description() {
+    local st_info=$(jq .components.schemas.$sub_type <<<  $OSC_API_JSON)
+    echo $st_info | jq .description
+    local properties=$(json-search -K properties <<< $st_info | tr -d '"[],')
+    #echo $properties
+    for p in $properties; do
+	echo \"-$p\:\"
+	echo -n '">>  "'
+	echo $st_info | json-search $p | jq .description
+	#get_sub_type_description "$st_info" "$p"
+    done
+}
+
+get_type_description() {
+    local desc=$(get_type_description_ "$1" "$2")
+
+    if [ "$desc" == "null" ]; then
+	local sub_type=$(echo  "$1" | jq .properties.$2 | json-search -R '$ref' | cut  -d '/' -f 4)
+	get_sub_type_description "$sub_type"
+    else
+	echo $desc
+    fi
 }
 
 get_type() {
