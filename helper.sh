@@ -65,26 +65,38 @@ get_type_description_() {
 }
 
 get_sub_type_description() {
-    local st_info=$(jq .components.schemas.$sub_type <<<  $OSC_API_JSON)
-    echo $st_info | jq .description
+    local st_info=$(jq .components.schemas.$1 <<<  $OSC_API_JSON)
+    echo $st_info | jq .description | fold -s -w64 | sed "s/^/${2}/"
     local properties=$(json-search -K properties <<< $st_info | tr -d '"[],')
     #echo $properties
     for p in $properties; do
-	echo \"-$p\:\"
-	echo -n '">>  "'
-	echo $st_info | json-search $p | jq .description
+	local properties=$(json-search $p <<< $st_info)
+	local desc=$(jq .description <<< $properties)
+	local type=$(get_type_direct "$properties")
+	echo "${2}-$p: $type"
+	if [ "$desc" != "null" ]; then
+	    echo $desc | fold -s -w64 | sed "s/^/${2}  /"
+	fi
+	local sub=$(json-search -R '$ref' <<< $properties 2>&1 )
+	if [ "$sub" != 'null' -a "$sub" != "nothing found" ]; then
+	    local sub_type=$(cut  -d '/' -f 4 <<< $sub)
+	    get_sub_type_description "$sub_type" "${2}  "
+	fi
 	#get_sub_type_description "$st_info" "$p"
     done
 }
 
 get_type_description() {
-    local desc=$(get_type_description_ "$1" "$2")
+    local properties=$(jq .properties.$2 <<< "$1")
+    local desc=$(jq .description <<< "$properties")
+    local ref=$(json-search '$ref' <<< "$properties" 2>&1 )
 
-    if [ "$desc" == "null" ]; then
-	local sub_type=$(echo  "$1" | jq .properties.$2 | json-search -R '$ref' | cut  -d '/' -f 4)
-	get_sub_type_description "$sub_type"
-    else
+    if [ "$desc" != "null" ]; then
 	echo $desc
+    fi
+    if [ "$ref" != "null" -a "$ref" != "nothing found" ]; then
+	local sub_type=$(echo  "$1" | jq .properties.$2 | json-search -R '$ref' | cut  -d '/' -f 4)
+	get_sub_type_description "$sub_type" "  "
     fi
 }
 
