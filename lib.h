@@ -191,6 +191,9 @@ const char *osc_set_get_path(void);
 const char *osc_find_description(const char *call_name);
 const char *osc_find_args_description(const char *call_name);
 
+/* Return a list of all calls names, last elem is NULL  */
+const char **osc_calls_name(void);
+
 #endif /* WITH_DESCRIPTION */
 
 ____functions_proto____

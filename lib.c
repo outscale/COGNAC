@@ -109,6 +109,11 @@ const char *osc_find_args_description(const char *call_name)
 	return NULL;
 }
 
+const char **osc_calls_name(void)
+{
+	return calls_name;
+}
+
 #endif  /* WITH_DESCRIPTION */
 
 #ifdef WITH_C11_THREAD_LOCAL

@@ -80,7 +80,7 @@ get_sub_type_description() {
 	local sub=$(json-search -R '$ref' <<< $properties 2>&1 )
 	if [ "$sub" != 'null' -a "$sub" != "nothing found" ]; then
 	    local sub_type=$(cut  -d '/' -f 4 <<< $sub)
-	    get_sub_type_description "$sub_type" "${2}  "
+	    get_sub_type_description "$sub_type" "${2}    "
 	fi
 	#get_sub_type_description "$st_info" "$p"
     done
