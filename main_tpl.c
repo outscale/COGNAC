@@ -47,7 +47,7 @@
 
 #define OAPI_RAW_OUTPUT 1
 
-#define OAPI_CLI_UAGENT "oapi-cli/0.1.0; osc-sdk-c/"
+#define OAPI_CLI_UAGENT "oapi-cli/____cli_version____; osc-sdk-c/"
 
 #define TRY(f, args...)						\
 	do {							\
