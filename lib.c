@@ -222,6 +222,10 @@ static char *osc_strdup(const char *str) {
 #define STRY(test,  ...)					\
 	if (test) return -1
 
+#define TRY_APPEND_COL(count_args, data)			\
+	if (count_args++ > 0)					\
+		STRY(osc_str_append_string(data, "," ));
+
 #define LOAD_CFG_GET_HOME(buf)						\
 	{								\
 		const char *dest = CFG_FILE;				\
