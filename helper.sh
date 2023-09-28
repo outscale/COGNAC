@@ -101,10 +101,16 @@ get_type_description() {
 }
 
 get_type() {
-    x=$2
-    func=$1
-    arg_info=$(json-search ${func}Request <<< $OSC_API_JSON | json-search $x)
-    types=$(json-search -M 1 -R type 2> /dev/null <<< $arg_info)
+    local x=$2
+    local func=$1
+    local arg_info=$(json-search ${func}Request <<< $OSC_API_JSON | json-search $x)
+    local one_of=$(jq -r .oneOf 2> /dev/null <<< $arg_info)
+    local have_one_of=$?
+    local limit=""
+    if [ $have_one_of == 0 -a "$one_of" != 'null'  ]; then
+	limit="-M 1"
+    fi
+    local types=$(json-search $limit -R type 2> /dev/null <<< $arg_info)
     have_type=$?
     if [ $have_type == 0 ]; then
 	if [ "$types" == 'integer' ]; then
