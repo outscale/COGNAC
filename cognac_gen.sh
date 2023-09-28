@@ -41,7 +41,6 @@ dash_this()
     local arg=$2
     local t=$(get_type $x $arg)
 
-
     if [ "ref" == $( echo "$t" | cut -d ' ' -f 1) ]; then
 	local st=$( echo $t | cut -f 2 -d ' ' )
 	local st_info=$(jq .components.schemas.$st <<< $OSC_API_JSON)
@@ -124,7 +123,7 @@ ${indent_plus}	    cascade_parser = ${sub_type}_parser;
 ${indent_plus}	    if (*dot_pos == '.') {
 ${indent_plus}		++dot_pos;
 ${indent_plus}	    }
-${indent_plus}	    ${sub_type}_parser(&s->${snake_a}, dot_pos, aa, pa);
+${indent_plus}	    STRY(${sub_type}_parser(&s->${snake_a}, dot_pos, aa, pa));
 ${indent_plus}	    s->is_set_${snake_a} = 1;
 $indent_plus } else {
 ${indent_plus}       s->${snake_a}_str = aa;
@@ -159,7 +158,7 @@ ${indent_plus}	      cascade_parser = ${sub_type}_parser;
 ${indent_plus}	      if (endptr[1] == '.') {
 ${indent_plus}		     ++endptr;
 ${indent_plus}	      }
-${indent_plus}	      ${sub_type}_parser(&s->${snake_a}[pos], endptr + 1, aa, pa);
+${indent_plus}	      STRY(${sub_type}_parser(&s->${snake_a}[pos], endptr + 1, aa, pa));
 $indent_plus } else {
 EOF
 	fi
@@ -298,6 +297,7 @@ EOF
 		cat <<EOF
 	{
 		fprintf(stderr, "'%s' not an argumemt of '$s'\n", str);
+		return -1;
 	}
 EOF
 		echo "	return 0;"
@@ -339,7 +339,7 @@ EOF
 			   } else {
 			     	  CHK_BAD_RET(!aa || aa[0] == '-', "cascade need an argument\n");
 			   }
-		      	   cascade_parser(cascade_struct, next_a, aa, pa);
+		      	   STRY(cascade_parser(cascade_struct, next_a, aa, pa));
 			   i += incr;
 		       	   goto ${snake_l}_arg;
 		      }

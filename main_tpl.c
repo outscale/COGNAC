@@ -51,6 +51,11 @@
 
 #define OAPI_CLI_UAGENT "oapi-cli/"OAPI_CLI_VERSION"; osc-sdk-c/"
 
+#define STRY(f, args...)					\
+	do {							\
+		if (f) {return 1;}				\
+	} while(0)
+
 #define TRY(f, args...)						\
 	do {							\
 		if (f) {fprintf(stderr, args);  return 1;}	\
