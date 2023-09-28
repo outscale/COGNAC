@@ -104,7 +104,7 @@ get_type() {
     x=$2
     func=$1
     arg_info=$(json-search ${func}Request <<< $OSC_API_JSON | json-search $x)
-    types=$(json-search -R type 2> /dev/null <<< $arg_info)
+    types=$(json-search -M 1 -R type 2> /dev/null <<< $arg_info)
     have_type=$?
     if [ $have_type == 0 ]; then
 	if [ "$types" == 'integer' ]; then
