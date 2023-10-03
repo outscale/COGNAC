@@ -20,4 +20,4 @@ Non exaustive list:
 
 ## contribution
 
-Open PR and Issues are welcom.
+Open Pull Requests and Issues are welcome.
