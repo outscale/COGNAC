@@ -210,6 +210,23 @@ int osc_str_append_string(struct osc_str *osc_str, const char *str)
 	return 0;
 }
 
+int osc_str_append_n_string(struct osc_str *osc_str, const char *str, int l)
+{
+	if (!str)
+		return 0;
+	assert(osc_str);
+
+	int len = osc_str->len;
+
+	osc_str->len = osc_str->len + l;
+	osc_str->buf = osc_realloc(osc_str->buf, osc_str->len + 1);
+	if (!osc_str->buf)
+		return -1;
+	memcpy(osc_str->buf + len, str, l);
+	osc_str->buf[len + l] = 0;
+	return 0;
+}
+
 static char *osc_strdup(const char *str) {
 	if (!str)
 		return NULL;

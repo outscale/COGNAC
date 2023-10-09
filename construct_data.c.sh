@@ -30,9 +30,22 @@ EOF
     elif [ "$t" ==  'string' ]; then
 	cat <<EOF
 	if (args->$snake_x) {
+	      	auto_osc_str struct osc_str s;
+		char *tmp = args->$snake_x;
+	   	char *endl;
+
+		osc_init_str(&s);
+		while((endl = strchr(tmp, '\n')) != NULL) {
+			int l = endl - tmp;
+
+			osc_str_append_n_string(&s, tmp, l);
+			osc_str_append_string(&s, "\\\\n");
+			tmp = endl + 1;
+		}
+		osc_str_append_string(&s, tmp);
 	   	TRY_APPEND_COL(count_args, data);
 		STRY(osc_str_append_string(data, "\"$x\\":\"" ));
-                STRY(osc_str_append_string(data, args->$snake_x));
+                STRY(osc_str_append_string(data, s.buf));
 		STRY(osc_str_append_string(data, "\"" ));
 	   	ret += 1;
 	}
@@ -54,10 +67,23 @@ EOF
 	   	TRY_APPEND_COL(count_args, data);
 		STRY(osc_str_append_string(data, "\"$x\\":[" ));
 		for (as = args->$snake_x; *as > 0; ++as) {
+		      	auto_osc_str struct osc_str s;
+			char *tmp = *as;
+			char *endl;
+
+			osc_init_str(&s);
+			while((endl = strchr(tmp, '\n')) != NULL) {
+				int l = endl - tmp;
+
+				osc_str_append_n_string(&s, tmp, l);
+				osc_str_append_string(&s, "\\\\n");
+				tmp = endl + 1;
+			}
+
 			if (as != args->$snake_x)
 				STRY(osc_str_append_string(data, "," ));
 			STRY(osc_str_append_string(data, "\"" ));
-			STRY(osc_str_append_string(data, *as));
+			STRY(osc_str_append_string(data, s.buf));
 			STRY(osc_str_append_string(data, "\"" ));
 		}
 		STRY(osc_str_append_string(data, "]" ));
