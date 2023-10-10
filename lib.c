@@ -253,6 +253,32 @@ static char *osc_strdup(const char *str) {
 		strcpy(stpcpy(buf, home), dest);			\
 	}
 
+#define ARG_TO_JSON_STR(separator, what) do {				\
+		auto_osc_str struct osc_str s;				\
+		char *tmp = what;					\
+		char *endl;						\
+									\
+		osc_init_str(&s);					\
+		while((endl = strchr(tmp, '\n')) != NULL) {		\
+			int l = endl - tmp;				\
+									\
+			osc_str_append_n_string(&s, tmp, l);		\
+			osc_str_append_string(&s, "\\n");		\
+			tmp = endl + 1;					\
+		}							\
+		osc_str_append_string(&s, tmp);				\
+		STRY(osc_str_append_string(data, separator));		\
+		STRY(osc_str_append_string(data, "\"" ));		\
+		STRY(osc_str_append_string(data, s.buf));		\
+		STRY(osc_str_append_string(data, "\"" ));		\
+	} while (0)
+
+#define ARG_TO_JSON(name, type, what) do {				\
+		TRY_APPEND_COL(count_args, data);			\
+		STRY(osc_str_append_string(data, "\""#name"\":" ));	\
+		STRY(osc_str_append_##type(data, what));		\
+	} while (0)
+
 
 int osc_load_ak_sk_from_conf(const char *profile, char **ak, char **sk)
 {
