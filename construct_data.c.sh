@@ -21,7 +21,7 @@ for x in $args ;do
     if [ "$t" == 'bool' ]; then
 	cat <<EOF
 	if (args->is_set_$snake_x) {
-		ARG_TO_JSON(data, bool, args->$snake_x);
+		ARG_TO_JSON($x, bool, args->$snake_x);
 	   	ret += 1;
 	}
 EOF
