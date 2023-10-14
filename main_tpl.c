@@ -79,6 +79,58 @@ static int argcmp(const char *s1, const char *s2)
 	return argcmp2(s1, s2, '.');
 }
 
+#define MAX_FILES_PER_CMD 64
+
+static void files_cnt_cleanup(char * (*files_cnt_ptr)[64])
+{
+	for (int i = 0; i < MAX_FILES_PER_CMD && *files_cnt_ptr[i]; ++i) {
+		free((*files_cnt_ptr)[i]);
+	}
+}
+
+char *read_file(char *files_cnt[static MAX_FILES_PER_CMD], char *file_name)
+{
+	int dest = -1;
+	for (int i = 0; i < MAX_FILES_PER_CMD; ++i) {
+		if (!file_name[i]) {
+			dest = i;
+			break;
+		}
+	}
+	if (dest < 0) {
+		fprintf(stderr, "--file option used too much");
+		return NULL;
+	}
+	FILE *f = fopen(file_name, "rb");
+	if (!f) {
+		fprintf(stderr, "--file failt to open %s", file_name);
+		return NULL;
+	}
+	if (fseek(f, 0, SEEK_END) < 0) {
+		fprintf(stderr, "--file fseek fail for %s", file_name);
+		return NULL;
+	}
+	long fsize = ftell(f);
+	if (fseek(f, 0, SEEK_SET) < 0) {
+		fprintf(stderr, "--file fseek fail for %s", file_name);
+		return NULL;
+	}
+
+	files_cnt[dest] = malloc(fsize + 1);
+	if (!files_cnt[dest]) {
+		fprintf(stderr, "--file malloc fail for %s", file_name);
+		return NULL;
+	}
+	if (fread(files_cnt[dest], fsize, 1, f) < 0) {
+		fprintf(stderr, "--file fread fail for %s", file_name);
+		return NULL;
+	}
+	fclose(f);
+	files_cnt[dest][fsize] = 0;
+	return files_cnt[dest];
+}
+
+
 static void *cascade_struct;
 static int (*cascade_parser)(void *, char *, char *, struct ptr_array *);
 

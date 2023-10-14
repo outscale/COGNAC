@@ -318,6 +318,7 @@ EOF
 		     struct ptr_array *pa = &opa;
 	      	     struct osc_${snake_l}_arg a = {0};
 		     struct osc_${snake_l}_arg *s = &a;
+		     __attribute__((cleanup(files_cnt_cleanup))) char *files_cnt[MAX_FILES_PER_CMD] = {NULL};
 	             int cret;
 
 		     cascade_struct = NULL;
@@ -352,8 +353,15 @@ EOF
 			     int incr = aa ? 2 : 1;
 
 			     if (aa && aa[0] == '-' && aa[1] == '-' && aa[2] != '-') {
-				aa = 0;
-				incr = 1;
+				if (!strcmp(aa, "--file")) {
+				   	TRY(i + 3 >= ac, "file name require");
+					++incr;
+					aa = read_file(files_cnt, av[i + 3]);
+					STRY(!aa);
+				} else {
+					aa = 0;
+					incr = 1;
+				}
 			     }
 EOF
 
