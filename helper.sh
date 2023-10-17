@@ -19,8 +19,15 @@ get_type_direct() {
 	    echo bool
 	    return 0
 	elif [ "$types" == 'array' ]; then
-	    sub_type=$(jq -r .items.type 2> /dev/null <<< $arg_info)
+	    local item_one_off=$(jq -r .items.oneOf 2> /dev/null <<< $arg_info)
+	    local item_is_one_of=$?
+	    local sub_type=$(jq -r .items.type 2> /dev/null <<< $arg_info)
 	    have_stype=$?
+	    if [ $item_is_one_of == 0 -a "$item_one_off" != 'null'  ]; then
+		local the_one=$(jq .[0] <<< $item_one_off)
+		sub_type=$(get_type_direct "$the_one")
+		have_stype=0
+	    fi
 	    if [ $have_stype == 0 ]; then
 		if [ "$sub_type" == 'string' ]; then
 		    types="array string"
