@@ -208,7 +208,8 @@ replace_args()
 	    for x in $CALL_LIST ; do
 		echo -en $D1
 		local required=$(echo $OSC_API_JSON | json-search ${x}Request | json-search required 2>&1 | tr -d '[]\n"' | tr -s ' ' | sed 's/nothing found//g')
-		local usage="\"Usage: oapi-cli $x ${required} [OPTIONS]\n\""
+		local usage_required=$( for a in $(echo $required | tr -d ','); do echo -n " --${a}=${a,,}"; done )
+		local usage="\"Usage: oapi-cli $x ${usage_required} [OPTIONS]\n\""
 		local call_desc=$(echo $OSC_API_JSON | jq .paths.\""/$x"\".description | sed 's/<br \/>//g' | tr -d '"' | fold -s | sed 's/^/"/;s/$/\\n"/')
 
 		echo $usage $call_desc \""\nRequired Argument:" $required "\n\""
