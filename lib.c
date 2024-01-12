@@ -48,8 +48,6 @@
 #define TIME_HDR_KEY "X-Osc-Date: "
 #define TIME_HDR_KEY_L (sizeof TIME_HDR_KEY)
 
-#define CFG_FILE "/.osc/config.json"
-
 #ifdef _WIN32
 
 #define SAFE_C 0
@@ -63,7 +61,15 @@ static inline char* stpcpy(char *dest, const char *src)
 	return dest;
 }
 
+#define CFG_FILE "config.json"
+
+#define LOAD_CFG_GET_HOME(buf)			\
+	{					\
+		strcpy(buf, CFG_FILE);		\
+	}
 #else
+
+#define CFG_FILE "/.osc/config.json"
 
 #define SAFE_C 1
 
@@ -243,6 +249,7 @@ static char *osc_strdup(const char *str) {
 	if (count_args++ > 0)					\
 		STRY(osc_str_append_string(data, "," ));
 
+#ifndef LOAD_CFG_GET_HOME
 #define LOAD_CFG_GET_HOME(buf)						\
 	{								\
 		const char *dest = CFG_FILE;				\
@@ -252,6 +259,7 @@ static char *osc_strdup(const char *str) {
 		    "home path too big");				\
 		strcpy(stpcpy(buf, home), dest);			\
 	}
+#endif
 
 #define ARG_TO_JSON_STR(separator, what) do {				\
 		auto_osc_str struct osc_str s;				\
