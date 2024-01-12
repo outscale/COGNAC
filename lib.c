@@ -39,6 +39,7 @@
 #include <assert.h>
 #include "curl/curl.h"
 #include <time.h>
+#include <unistd.h>
 #include "osc_sdk.h"
 #include "json.h"
 
@@ -305,8 +306,9 @@ int osc_load_ak_sk_from_conf(const char *profile, char **ak, char **sk)
 		*sk = NULL;
 	if (ak)
 		*ak = NULL;
+	TRY(access(cfg, R_OK), "can't open/read %s\n", cfg);
 	js = json_object_from_file(cfg);
-	TRY(!js, "can't open %s\n", cfg);
+	TRY(!js, "can't load json-file %s (json might have incorect syntaxe)\n", cfg);
 	to_free = js;
 	js = json_object_object_get(js, profile);
 	TRY(!js, "can't find profile %s\n", profile);
