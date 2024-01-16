@@ -64,7 +64,7 @@ cli_c_type_parser()
     indent_base=$3
     indent_plus="$indent_base    "
     snake_a=$(to_snakecase <<< $a)
-    snake_a=$(sed s/default/default_arg/g <<< $snake_a)
+    snake_a=$( if [ "default" == "$snake_a" ] ; then echo default_arg; else echo $snake_a; fi )
 
     if [ 'int' == "$type" ]; then
 	cat <<EOF

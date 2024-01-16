@@ -15,7 +15,7 @@ fi
 
 for x in $args ;do
     snake_x=$(to_snakecase <<< $x)
-    snake_x=$(sed s/default/default_arg/g <<< $snake_x)
+    snake_x=$( if [ "default" == "$snake_x" ] ; then echo default_arg; else echo $snake_x; fi )
     t=$(get_type $func $x)
 
     if [ "$t" == 'bool' ]; then

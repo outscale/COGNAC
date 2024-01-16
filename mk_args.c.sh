@@ -16,7 +16,7 @@ type_to_ctype() {
     local oref="$t"
 
     if [ "$t" == 'int' -o "$t" == 'bool' -o "$t" == 'double' ]; then
-	snake_name=$(sed s/default/default_arg/g <<< $snake_name)
+	snake_name=$( if [ "default" == "$snake_name" ] ; then echo default_arg; else echo $snake_name; fi )
 	echo "        int is_set_${snake_name};"
 	if [ "$t" == 'double' ]; then
 	    c_type="double "
