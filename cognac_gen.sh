@@ -357,8 +357,14 @@ EOF
 				if (!strcmp(aa, "--file")) {
 				   	TRY(i + 3 >= ac, "file name require");
 					++incr;
-					aa = read_file(files_cnt, av[i + 3]);
+					aa = read_file(files_cnt, av[i + 3], 0);
 					STRY(!aa);
+				} else if (!strcmp(aa, "--jsonstr-file")) {
+				   	TRY(i + 3 >= ac, "file name require");
+					++incr;
+					aa = read_file(files_cnt, av[i + 3], 1);
+					STRY(!aa);
+
 				} else {
 					aa = 0;
 					incr = 1;
