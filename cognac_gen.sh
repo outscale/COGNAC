@@ -353,6 +353,7 @@ EOF
 			     int aret = 0;
 			     int incr = aa ? 2 : 1;
 
+			     (void)str;
 			     if (aa && aa[0] == '-' && aa[1] == '-' && aa[2] != '-') {
 				if (!strcmp(aa, "--file")) {
 				   	TRY(i + 3 >= ac, "file name require");

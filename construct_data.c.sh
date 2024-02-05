@@ -47,7 +47,7 @@ EOF
 
 	   	TRY_APPEND_COL(count_args, data);
 		STRY(osc_str_append_string(data, "\"$x\\":[" ));
-		for (as = args->$snake_x; *as > 0; ++as) {
+		for (as = args->$snake_x; *as; ++as) {
 			if (as != args->$snake_x)
 				STRY(osc_str_append_string(data, "," ));
 			ARG_TO_JSON_STR("", *as);
