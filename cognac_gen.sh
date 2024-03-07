@@ -346,7 +346,7 @@ EOF
 		       	   goto ${snake_l}_arg;
 		      }
 
-		     if (i + 1 < ac && av[i + 1][0] == '-' && av[i + 1][1] == '-') {
+		     if (i + 1 < ac && av[i + 1][0] == '-' && av[i + 1][1] == '-' && strcmp(av[i + 1] + 2, "SetVar")) {
  		             char *next_a = &av[i + 1][2];
 			     char *str = next_a;
  		     	     char *aa = i + 2 < ac ? av[i + 2] : 0;
@@ -365,7 +365,18 @@ EOF
 					++incr;
 					aa = read_file(files_cnt, av[i + 3], 1);
 					STRY(!aa);
-
+				} else if (!strcmp(aa, "--var")) {
+				   	TRY(i + 3 >= ac, "var name require");
+					int var_found = 0;
+					for (int j = 0; j < nb_cli_vars; ++j) {
+					    if (!strcmp(cli_vars[j].name, av[i + 3])) {
+						var_found = 1;
+						aa = cli_vars[j].val;
+					    }
+					}
+					TRY(!var_found, "--var could not find osc variable '%s'", av[i + 3]);
+					++incr;
+					STRY(!aa);
 				} else {
 					aa = 0;
 					incr = 1;
@@ -399,6 +410,7 @@ EOF
 		     cret = osc_$snake_l(&e, &r, &a);
             	     TRY(cret, "fail to call $l: %s\n", curl_easy_strerror(cret));
 		     CHK_BAD_RET(!r.buf, "connection sucessful, but empty responce\n");
+		     jobj = NULL;
 		     if (program_flag & OAPI_RAW_OUTPUT)
 		             puts(r.buf);
 		     else {
@@ -406,8 +418,19 @@ EOF
 			     puts(json_object_to_json_string_ext(jobj,
 					JSON_C_TO_STRING_PRETTY | JSON_C_TO_STRING_NOSLASHESCAPE |
 					color_flag));
-			     json_object_put(jobj);
+		     }
+		     if (i + 1 < ac && !strcmp(av[i + 1], "--SetVar")) {
+		     	     ++i;
+			     TRY(i + 1 >= ac, "--SetVar require an argument");
+		     	     if (!jobj)
+			     	jobj = json_tokener_parse(r.buf);
+			     if (parse_variable(jobj, av, ac, i))
+			     	return -1;
+		     	     ++i;
 		      }
+
+		      if (jobj)
+			     json_object_put(jobj);
 		     osc_deinit_str(&r);
 	      } else
 EOF
