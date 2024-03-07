@@ -58,9 +58,23 @@
 
 #define TRY(f, args...)						\
 	do {							\
-		if (f) {fprintf(stderr, args);  return 1;}	\
+		if (f) {fprintf(stderr, args);  return -1;}	\
 	} while(0)
 
+
+#define VAR_NAME_SIZE 128
+#define VAR_VAL_SIZE 512
+#define VAR_ARRAY_SIZE 128
+
+static int nb_cli_vars;
+
+struct cli_var {
+	char name[VAR_NAME_SIZE];
+	char val[VAR_VAL_SIZE];
+} cli_vars[VAR_ARRAY_SIZE];
+
+static void *cascade_struct;
+static int (*cascade_parser)(void *, char *, char *, struct ptr_array *);
 
 static int argcmp2(const char *s1, const char *s2, char dst)
 {
@@ -109,6 +123,55 @@ char *string_to_jsonstr(char **file_str_p)
 	free(in);
 	*file_str_p = s.buf;
 	return *file_str_p;
+}
+
+static int parse_variable(json_object *jobj, char **av, int ac, int i)
+{
+	const char *tmp = av[i + 1];
+	const char *tmp2;
+	TRY(nb_cli_vars >= VAR_ARRAY_SIZE, "variable asignement fail: too much variables");
+	struct cli_var *var = &cli_vars[nb_cli_vars++];
+	json_object *j = jobj;
+	char buf[512];
+
+	tmp2 = strchr(tmp, '=');
+	TRY(!tmp2, "variable asignement fail (missing '='))\n");
+	TRY((uintptr_t)(tmp2 - tmp) >= VAR_NAME_SIZE, "var name too long");
+	strncpy(var->name, tmp, tmp2 - tmp);
+	var->name[tmp2 - tmp] = 0;
+	tmp = tmp2 + 1;
+
+	while ((tmp2 = strchr(tmp, '.')) != NULL) {
+		char *end = NULL;
+		// get json
+		int idx = strtoul(tmp, &end, 0);
+		if (end != tmp) {
+			j = json_object_array_get_idx(j, idx);
+		} else {
+			TRY((uintptr_t)(tmp2 - tmp) >= sizeof buf - 1,
+			    "variable asignement fail");
+			strncpy(buf, tmp, tmp2 - tmp);
+			buf[tmp2 - tmp] = 0;
+			j = json_object_object_get(j, buf);
+		}
+		TRY(!j, "variable asignement fail (not found)");
+		tmp = tmp2 + 1;
+	}
+	tmp2 = tmp + strlen(tmp);
+	TRY((uintptr_t)(tmp2 - tmp) >= sizeof buf - 1,
+	    "variable asignement fail");
+	strncpy(buf, tmp, tmp2 - tmp);
+	buf[tmp2 - tmp] = 0;
+	j = json_object_object_get(j, buf);
+	if (json_object_is_type(j, json_type_string)) {
+		tmp = json_object_get_string(j);
+	} else {
+		tmp = json_object_to_json_string_ext(j, JSON_C_TO_STRING_PLAIN);
+	}
+	TRY(strlen(tmp) >= VAR_VAL_SIZE, "variable asignement fail: value too big");
+	strcpy(var->val, tmp);
+	return 0;
+
 }
 
 char *read_file(char *files_cnt[static MAX_FILES_PER_CMD], char *file_name,
@@ -160,10 +223,6 @@ error:
 	fclose(f);
 	return NULL;
 }
-
-
-static void *cascade_struct;
-static int (*cascade_parser)(void *, char *, char *, struct ptr_array *);
 
 ____complex_struct_func_parser____
 
