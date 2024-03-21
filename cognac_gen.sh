@@ -314,7 +314,7 @@ EOF
 
 		cat <<EOF
               if (!strcmp("$l", av[i])) {
-		     json_object *jobj;
+		     auto_osc_json_c json_object *jobj = NULL;
 		     auto_ptr_array struct ptr_array opa = {0};
 		     struct ptr_array *pa = &opa;
 	      	     struct osc_${snake_l}_arg a = {0};
@@ -429,8 +429,10 @@ EOF
 		     	     ++i;
 		      }
 
-		      if (jobj)
+		      if (jobj) {
 			     json_object_put(jobj);
+			     jobj = NULL;
+		      }
 		     osc_deinit_str(&r);
 	      } else
 EOF
