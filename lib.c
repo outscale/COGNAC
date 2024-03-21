@@ -129,16 +129,6 @@ const char **osc_calls_name(void)
 #define THREAD_LOCAL
 #endif
 
-static void osc_json_c_obj_put(json_object **js)
-{
-	if (!*js)
-		return;
-	json_object_put(*js);
-}
-
-#define auto_osc_json_c_obj_put __attribute__((cleanup(osc_json_c_obj_put)))
-
-
 static THREAD_LOCAL const char *cfg_path;
 
 void osc_set_cfg_path(const char *cfg)
@@ -294,7 +284,7 @@ int osc_load_ak_sk_from_conf(const char *profile, char **ak, char **sk)
 	char buf[1024];
 	const char *cfg = cfg_path;
 	struct json_object *js, *ak_js, *sk_js;
-	auto_osc_json_c_obj_put struct json_object *to_free = NULL;
+	auto_osc_json_c struct json_object *to_free = NULL;
 
 	if (!ak && !sk)
 		return 0;
@@ -330,7 +320,7 @@ int osc_load_loging_password_from_conf(const char *profile,
 {
 	char buf[1024];
 	const char *cfg = cfg_path;
-	auto_osc_json_c_obj_put struct json_object *to_free = NULL;
+	auto_osc_json_c struct json_object *to_free = NULL;
 	struct json_object *js, *login_js, *pass_js;
 
 	if (!email && !password)
@@ -370,7 +360,7 @@ int osc_load_region_from_conf(const char *profile, char **region)
 	const char *cfg = cfg_path;
 	char buf[1024];
 	struct json_object *js;
-	auto_osc_json_c_obj_put struct json_object *to_free = NULL;
+	auto_osc_json_c struct json_object *to_free = NULL;
 
 	if (!cfg) {
 		LOAD_CFG_GET_HOME(buf);
@@ -395,7 +385,7 @@ int osc_load_cert_from_conf(const char *profile, char **cert, char **key)
 {
 	struct json_object *cert_obj, *key_obj, *js;
 	const char *cfg = cfg_path;
-	auto_osc_json_c_obj_put struct json_object *to_free = NULL;
+	auto_osc_json_c struct json_object *to_free = NULL;
 	char buf[1024];
 	int ret = 0;
 
@@ -445,6 +435,12 @@ void osc_init_str(struct osc_str *r)
 {
 	r->len = 0;
 	r->buf = NULL;
+}
+
+void osc_deinit_json_c(json_object **j)
+{
+	if (j && *j)
+		json_object_put(*j);
 }
 
 void osc_deinit_str(struct osc_str *r)
