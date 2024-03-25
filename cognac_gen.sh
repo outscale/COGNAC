@@ -346,7 +346,7 @@ EOF
 		       	   goto ${snake_l}_arg;
 		      }
 
-		     if (i + 1 < ac && av[i + 1][0] == '-' && av[i + 1][1] == '-' && strcmp(av[i + 1] + 2, "SetVar")) {
+		     if (i + 1 < ac && av[i + 1][0] == '-' && av[i + 1][1] == '-' && strcmp(av[i + 1] + 2, "set-var")) {
  		             char *next_a = &av[i + 1][2];
 			     char *str = next_a;
  		     	     char *aa = i + 2 < ac ? av[i + 2] : 0;
@@ -419,9 +419,9 @@ EOF
 					JSON_C_TO_STRING_PRETTY | JSON_C_TO_STRING_NOSLASHESCAPE |
 					color_flag));
 		     }
-		     if (i + 1 < ac && !strcmp(av[i + 1], "--SetVar")) {
+		     if (i + 1 < ac && !strcmp(av[i + 1], "--set-var")) {
 		     	     ++i;
-			     TRY(i + 1 >= ac, "--SetVar require an argument");
+			     TRY(i + 1 >= ac, "--set-var require an argument");
 		     	     if (!jobj)
 			     	jobj = json_tokener_parse(r.buf);
 			     if (parse_variable(jobj, av, ac, i))
