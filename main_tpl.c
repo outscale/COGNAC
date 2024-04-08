@@ -214,7 +214,7 @@ int main(int ac, char **av)
 			       OSC_API_VERSION);
 			return 0;
 		} else if (!strcmp("--raw-print", av[i])) {
-		  flag |= OAPI_RAW_OUTPUT;
+		  program_flag |= OAPI_RAW_OUTPUT;
 		} else if (!strcmp("--list-calls", av[i])) {
 			const char **names = osc_calls_name();
 
