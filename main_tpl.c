@@ -237,7 +237,7 @@ int main(int ac, char **av)
 				return 1;
 			}
 			auth_m = str_auth_method_to_int(auth_str);
-			TRY(auth_m < 0, "%s unknow auth-method\n", auth_str);
+			TRY(auth_m < 0, "%s unknown auth-method\n", auth_str);
 		} else if (!argcmp2("--authentication_method", av[i], '=')) {
 			const char *auth_str;
 			if (av[i][sizeof("--authentication_method") - 1] == '=') {
@@ -251,7 +251,7 @@ int main(int ac, char **av)
 				return 1;
 			}
 			auth_m = str_auth_method_to_int(auth_str);
-			TRY(auth_m < 0, "%s unknow authentication_method\n", auth_str);
+			TRY(auth_m < 0, "%s unknown authentication_method\n", auth_str);
 		} else if (!argcmp2("--config", av[i], '=')) {
 			const char *cfg_str;
 			if (av[i][sizeof("--config") - 1] == '=') {
@@ -348,7 +348,7 @@ int main(int ac, char **av)
 		if (!strcmp("--verbose", av[i]) ||		\
 		    !strcmp("--insecure", av[i]) ||		\
 		    !strcmp("--raw-print", av[i])) {
-			/* Avoid Unknow Calls */
+			/* Avoid Unknown Calls */
 		} else if (!argcmp2("--profile", av[i], '=')) {
 			if (!av[i][sizeof("--profile") - 1]) {
 				++i;
@@ -383,7 +383,7 @@ int main(int ac, char **av)
 					puts(cad);
 					goto good;
 				} else {
-					printf("Unknow Call %s\n", av[i+1]);
+					printf("Unknown Call %s\n", av[i+1]);
 					goto out;
 				}
 			}
@@ -393,7 +393,7 @@ int main(int ac, char **av)
 		} else
 		____cli_parser____
 		{
-			printf("Unknow Call %s\n", av[i]);
+			printf("Unknown Call %s\n", av[i]);
 			ret = 1;
 			goto out;
 		}
