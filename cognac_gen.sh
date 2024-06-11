@@ -340,7 +340,7 @@ EOF
 				  aa = eq_ptr + 1;
 			   } else {
 			     	  CHK_BAD_RET(!aa, "cascade need an argument\n");
-					  META_ARGS()
+					  META_ARGS({CHK_BAD_RET(aa[0] == '-', "cascade need an argument"); })
 			   }
 		      	   STRY(cascade_parser(cascade_struct, next_a, aa, pa));
 			   i += incr;
@@ -356,7 +356,7 @@ EOF
 
 			     (void)str;
 			     if (aa && aa[0] == '-' && aa[1] == '-' && aa[2] != '-') {
-				 	META_ARGS();
+				 	META_ARGS({ aa = 0; incr = 1; });
 			     }
 EOF
 

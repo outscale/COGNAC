@@ -61,7 +61,7 @@
 		if (f) {fprintf(stderr, args);  return -1;}	\
 	} while(0)
 
-#define META_ARGS()                                                     \
+#define META_ARGS(else_cnd)                                                     \
 	if (!strcmp(aa, "--file")) {                                        \
 		TRY(i + 3 >= ac, "file name require");                          \
 		++incr;                                                         \
@@ -84,10 +84,9 @@
 		TRY(!var_found, "--var could not find osc variable '%s'", av[i + 3]); \
 		++incr;                                                         \
 		STRY(!aa);                                                      \
-	} else {                                                            \
-		aa = 0;                                                         \
-		incr = 1;                                                       \
-	}
+	} else \
+		else_cnd
+
 
 #define VAR_NAME_SIZE 128
 #define VAR_VAL_SIZE 512
