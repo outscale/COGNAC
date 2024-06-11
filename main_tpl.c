@@ -61,6 +61,33 @@
 		if (f) {fprintf(stderr, args);  return -1;}	\
 	} while(0)
 
+#define META_ARGS()                                                     \
+	if (!strcmp(aa, "--file")) {                                        \
+		TRY(i + 3 >= ac, "file name require");                          \
+		++incr;                                                         \
+		aa = read_file(files_cnt, av[i + 3], 0);                        \
+		STRY(!aa);                                                      \
+	} else if (!strcmp(aa, "--jsonstr-file")) {                         \
+		TRY(i + 3 >= ac, "file name require");                          \
+		++incr;                                                         \
+		aa = read_file(files_cnt, av[i + 3], 1);                        \
+		STRY(!aa);                                                      \
+	} else if (!strcmp(aa, "--var")) {                                  \
+		TRY(i + 3 >= ac, "var name require");                           \
+		int var_found = 0;                                              \
+		for (int j = 0; j < nb_cli_vars; ++j) {                         \
+			if (!strcmp(cli_vars[j].name, av[i + 3])) {                 \
+				var_found = 1;                                          \
+				aa = cli_vars[j].val;                                   \
+			}                                                           \
+		}                                                               \
+		TRY(!var_found, "--var could not find osc variable '%s'", av[i + 3]); \
+		++incr;                                                         \
+		STRY(!aa);                                                      \
+	} else {                                                            \
+		aa = 0;                                                         \
+		incr = 1;                                                       \
+	}
 
 #define VAR_NAME_SIZE 128
 #define VAR_VAL_SIZE 512
