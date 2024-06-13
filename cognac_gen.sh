@@ -395,7 +395,7 @@ EOF
 					JSON_C_TO_STRING_PRETTY | JSON_C_TO_STRING_NOSLASHESCAPE |
 					color_flag));
 		     }
-		     if (i + 1 < ac && !strcmp(av[i + 1], "--set-var")) {
+		     while (i + 1 < ac && !strcmp(av[i + 1], "--set-var")) {
 		     	     ++i;
 			     TRY(i + 1 >= ac, "--set-var require an argument");
 		     	     if (!jobj)
