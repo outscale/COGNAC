@@ -88,7 +88,7 @@ get_sub_type_description() {
 	fi
 	echo "${2}--${3}.${show_idx}$p: $type"
 	if [ "$desc" != "null" ]; then
-	    echo $desc | fold -s -w64 | sed "s/^/${2}  /"
+	    echo $desc | fold -s -w74 | sed "s/^/${2}  /"
 	fi
 	local sub=$(json-search -R '$ref' <<< $properties 2>&1 )
 	if [ "$sub" != 'null' -a "$sub" != "nothing found" ]; then

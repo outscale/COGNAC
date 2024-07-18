@@ -230,7 +230,7 @@ replace_args()
 		    local t=$(get_type3 "$st_info" "$a")
 		    local snake_n=$(to_snakecase <<< $a)
 		    echo "\"--$a: $t\\n\""
-		    get_type_description "$st_info" "$a" | sed 's/<br \/>//g;s/\\"/\&quot;/g' | tr -d '"' | fold -s -w72 | sed 's/^/\t"  /;s/$/\\n"/;s/\&quot;/\\"/g'
+		    get_type_description "$st_info" "$a" | sed 's/<br \/>//g;s/\\"/\&quot;/g' | tr -d '"' | fold -s -w92 | sed 's/^/\t"  /;s/$/\\n"/;s/\&quot;/\\"/g'
 		done
 		echo -en $D2
 	    done
