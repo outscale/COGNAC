@@ -7,7 +7,7 @@ get_type_direct() {
     local direct_ref=$(jq -r '.["$ref"]' 2> /dev/null <<< $arg_info)
     local have_direct_ref=$?
     if [ $have_direct_ref == 0 -a "$direct_ref" != 'null' ]; then
-    	ref_path=$(echo $direct_ref |  cut -c 2- | sed 's|/|.|g')
+    	ref_path=$(cut -c 2- <<< $direct_ref | sed 's|/|.|g')
 	local direct_ref_properties=$(jq $ref_path.properties <<< $OSC_API_JSON 2> /dev/null)
 	if [ "$direct_ref_properties" == 'null' ]; then
     	    arg_info="$(jq $ref_path <<< $OSC_API_JSON)"
@@ -130,7 +130,7 @@ get_type_description() {
 	echo $desc
     fi
     if [ "$ref" != "null" -a "$ref" != "nothing found" ]; then
-	local sub_type=$(echo  "$1" | jq .properties.$2 | json-search -R '$ref' | cut  -d '/' -f 4)
+	local sub_type=$(jq .properties.$2 <<< "$1" | json-search -R '$ref' | cut  -d '/' -f 4)
 	local o_type=$(get_type3 "$1" "$2")
 	get_sub_type_description "$sub_type" "  " "$2" "$o_type"
     fi
@@ -143,7 +143,7 @@ get_type() {
     local direct_ref=$(jq -r '.["$ref"]' 2> /dev/null <<< $arg_info)
     local have_direct_ref=$?
     if [ $have_direct_ref == 0 -a "$direct_ref" != 'null' ]; then
-    	ref_path=$(echo $direct_ref |  cut -c 2- | sed 's|/|.|g')
+    	ref_path=$(cut -c 2- <<< $direct_ref | sed 's|/|.|g')
 	local direct_ref_properties=$(jq $ref_path.properties <<< $OSC_API_JSON 2> /dev/null)
 	if [ "$direct_ref_properties" == 'null' ]; then
     	    arg_info="$(jq $ref_path <<< $OSC_API_JSON)"
