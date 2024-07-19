@@ -77,12 +77,17 @@ create_struct() {
     #for s in "skip"; do
     local s="$1"
     local st0_info=$(jq .components.schemas.$s <<<  $OSC_API_JSON)
-    local A0_LST=$(json-search -K properties <<< $st0_info | tr -d '",[]')
+    local A0_LST=$(json-search -Kn properties <<< $st0_info | tr -d '",[]')
 
     if [ "${structs[$s]}" != "" ]; then
 	return
     fi
+
+    if [ "$A0_LST" == "null" ]; then
+	return
+    fi
     structs["$s"]="is_set"
+
     for a in $A0_LST; do
 	local t=$(get_type3 "$st0_info" "$a")
 
@@ -106,9 +111,8 @@ for s in $COMPLEX_STRUCT; do
 done
 
 for l in $CALL_LIST ;do
-#for l in UpdateImage; do
     snake_l=$(to_snakecase <<< $l)
-    request=$(json-search -s  ${l}Request ./osc-api.json)
+    request=$(json-search -s  ${l}Request <<< $OSC_API_JSON)
     ARGS_LIST=$(echo $request | json-search -KR "properties" | tr -d '"' | sed 's/,/\n/g')
 
     echo "struct osc_${snake_l}_arg  {"

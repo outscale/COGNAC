@@ -222,7 +222,7 @@ replace_args()
 	    D2=$(cut -d ';' -f 2  <<< $DELIMES | tr -d "'")
 	    D3=$(cut -d ';' -f 3  <<< $DELIMES | tr -d "'")
 	    for x in $CALL_LIST ; do
-		st_info=$(json-search -s  ${x}Request ./osc-api.json)
+		st_info=$(json-search -s  ${x}Request <<< $OSC_API_JSON)
 		A_LST=$(json-search -K properties <<< $st_info | tr -d '",[]')
 
 		echo -en $D1
@@ -252,22 +252,28 @@ replace_args()
 	    for s in $COMPLEX_STRUCT; do
 		struct_name=$(to_snakecase <<< $s)
 
-		echo "static int ${struct_name}_setter(struct ${struct_name} *args, struct osc_str *data);"
+		A_LST=$(jq .components.schemas.$s <<<  $OSC_API_JSON | json-search -Kn properties | tr -d '",[]')
+		if [ "$A_LST" != "null" ]; then
+		    echo "static int ${struct_name}_setter(struct ${struct_name} *args, struct osc_str *data);"
+		fi
 	    done
 	    for s in $COMPLEX_STRUCT; do
 		struct_name=$(to_snakecase <<< $s)
-		cat <<EOF
+		A_LST=$(jq .components.schemas.$s <<<  $OSC_API_JSON | json-search -Kn properties | tr -d '",[]')
+		if [ "$A_LST" != "null" ]; then
+		    cat <<EOF
 static int ${struct_name}_setter(struct ${struct_name} *args, struct osc_str *data) {
        int count_args = 0;
        int ret = 0;
 EOF
-		A_LST=$(jq .components.schemas.$s <<<  $OSC_API_JSON | json-search -K properties | tr -d '",[]')
 
-		./construct_data.c.sh $s complex_struct
-		cat <<EOF
+		    ./construct_data.c.sh $s complex_struct
+		    cat <<EOF
+
 	return !!ret;
 }
 EOF
+		fi
 	    done
 	elif [ $have_complex_struct_func_parser == 0 ]; then
 	    COMPLEX_STRUCT=$(jq .components <<< $OSC_API_JSON | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response | grep -v Request)
@@ -275,7 +281,10 @@ EOF
 	    # prototypes
 	    for s in $COMPLEX_STRUCT; do
 		struct_name=$(to_snakecase <<< $s)
-		echo  "int ${struct_name}_parser(void *s, char *str, char *aa, struct ptr_array *pa);"
+		A_LST=$(jq .components.schemas.$s <<<  $OSC_API_JSON | json-search -Kn properties | tr -d '",[]')
+		if [ "$A_LST" != "null" ]; then
+		    echo  "int ${struct_name}_parser(void *s, char *str, char *aa, struct ptr_array *pa);"
+		fi
 	    done
 	    echo "" #add a \n
 
@@ -284,31 +293,34 @@ EOF
 		#for s in "skip"; do
 		struct_name=$(to_snakecase <<< $s)
 
-		echo  "int ${struct_name}_parser(void *v_s, char *str, char *aa, struct ptr_array *pa) {"
-		A_LST=$(jq .components.schemas.$s <<<  $OSC_API_JSON | json-search -K properties | tr -d '",[]')
-		echo "	    struct $struct_name *s = v_s;"
-		echo "	    int aret = 0;"
-		for a in $A_LST; do
-		    t=$(get_type2 "$s" "$a")
-		    snake_n=$(to_snakecase <<< $a)
+		A_LST=$(jq .components.schemas.$s <<<  $OSC_API_JSON | json-search -Kn properties | tr -d '",[]')
+		if [ "$A_LST" != "null" ]; then
+		    echo  "int ${struct_name}_parser(void *v_s, char *str, char *aa, struct ptr_array *pa) {"
 
-		    echo "	if ((aret = argcmp(str, \"$a\")) == 0 || aret == '=') {"
-		    cli_c_type_parser "$a" "$t" "        "
-		done
-		cat <<EOF
+		    echo "	    struct $struct_name *s = v_s;"
+		    echo "	    int aret = 0;"
+		    for a in $A_LST; do
+			t=$(get_type2 "$s" "$a")
+			snake_n=$(to_snakecase <<< $a)
+
+			echo "	if ((aret = argcmp(str, \"$a\")) == 0 || aret == '=') {"
+			cli_c_type_parser "$a" "$t" "        "
+		    done
+		    cat <<EOF
 	{
 		fprintf(stderr, "'%s' not an argumemt of '$s'\n", str);
 		return -1;
 	}
 EOF
-		echo "	return 0;"
-		echo -e '}\n'
+		    echo "	return 0;"
+		    echo -e '}\n'
+		fi
 	    done
 
 	elif [ $have_cli_parser == 0 ] ; then
 	    for l in $CALL_LIST; do
 		snake_l=$(to_snakecase <<< $l)
-		arg_list=$(json-search ${l}Request osc-api.json \
+		arg_list=$(json-search ${l}Request <<< $OSC_API_JSON \
 			       | json-search -K properties \
 			       | tr -d "[]\"," | sed '/^$/d')
 
