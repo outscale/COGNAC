@@ -179,28 +179,12 @@ replace_args()
     while IFS= read -r line
     do
 	#check ____args____ here
-	grep ____args____ <<< "$line" > /dev/null
-	have_args=$?
-	grep ____func_code____ <<< "$line" > /dev/null
-	have_func_code=$?
-	grep ____functions_proto____ <<< "$line" > /dev/null
-	have_func_protos=$?
-	grep ____cli_parser____ <<< "$line" > /dev/null
-	have_cli_parser=$?
-	grep ____complex_struct_func_parser____ <<< "$line" > /dev/null
-	have_complex_struct_func_parser=$?
-	grep ____complex_struct_to_string_func____ <<< "$line" > /dev/null
-	have_complex_struct_to_string_func=$?
-	grep ____call_list_dec____ <<< "$line" > /dev/null
-	have_call_list_dec=$?
-	grep ____call_list_descriptions____ <<< "$line" > /dev/null
-	have_call_list_descr=$?
-	grep ____call_list_args_descriptions____ <<< "$line" > /dev/null
-	have_call_list_arg_descr=$?
 
-	if [ $have_args == 0 ]; then
+	arg_check=$(bin/line_check ____args____ ____func_code____ ____functions_proto____ ____cli_parser____ ____complex_struct_func_parser____ ____complex_struct_to_string_func____ ____call_list_dec____ ____call_list_descriptions____ ____call_list_args_descriptions____ <<< "$line")
+
+	if [ "$arg_check" == "____args____" ]; then
 	    ./mk_args.${lang}.sh
-	elif [ $have_call_list_descr == 0 ]; then
+	elif [ "$arg_check" == "____call_list_descriptions____" ]; then
 	    DELIMES=$(cut -d '(' -f 2 <<< $line | tr -d ')')
 	    D1=$(cut -d ';' -f 1  <<< $DELIMES | tr -d "'")
 	    D2=$(cut -d ';' -f 2  <<< $DELIMES | tr -d "'")
@@ -216,7 +200,7 @@ replace_args()
 		echo -en $D2
 	    done
 	    echo -ne $D3
-	elif [ $have_call_list_arg_descr == 0 ]; then
+	elif [ "$arg_check" == "____call_list_args_descriptions____" ]; then
 	    DELIMES=$(cut -d '(' -f 2 <<< $line | tr -d ')')
 	    D1=$(cut -d ';' -f 1  <<< $DELIMES | tr -d "'")
 	    D2=$(cut -d ';' -f 2  <<< $DELIMES | tr -d "'")
@@ -235,7 +219,7 @@ replace_args()
 		echo -en $D2
 	    done
 	    echo -ne $D3
-	elif [ $have_call_list_dec == 0 ]; then
+	elif [ "$arg_check" == "____call_list_dec____" ]; then
 	    DELIMES=$(cut -d '(' -f 2 <<< $line | tr -d ')')
 	    D1=$(cut -d ';' -f 1  <<< $DELIMES | tr -d "'")
 	    D2=$(cut -d ';' -f 2  <<< $DELIMES | tr -d "'")
@@ -247,7 +231,7 @@ replace_args()
 	    done
 	    echo -ne $D3
 	elif [ $have_complex_struct_to_string_func == 0 ]; then
-	    COMPLEX_STRUCT=$(jq .components < osc-api.json | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response | grep -v Request)
+	    COMPLEX_STRUCT=$(jq .components <<< $OSC_API_JSON | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response | grep -v Request)
 
 	    for s in $COMPLEX_STRUCT; do
 		struct_name=$(to_snakecase <<< $s)
@@ -275,7 +259,7 @@ EOF
 EOF
 		fi
 	    done
-	elif [ $have_complex_struct_func_parser == 0 ]; then
+	elif [ "$arg_check" == "____complex_struct_func_parser____" ]; then
 	    COMPLEX_STRUCT=$(jq .components < osc-api.json | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response | grep -v Request)
 
 	    # prototypes
@@ -317,7 +301,7 @@ EOF
 		fi
 	    done
 
-	elif [ $have_cli_parser == 0 ] ; then
+	elif [ "$arg_check" == "____cli_parser____" ] ; then
 	    for l in $CALL_LIST; do
 		snake_l=$(to_snakecase <<< $l)
 		arg_list=$(json-search ${l}Request < osc-api.json \
@@ -425,12 +409,12 @@ EOF
 	      } else
 EOF
 	    done
-	elif [ $have_func_protos == 0 ] ; then
+	elif [ "$arg_check" == "____functions_proto____" ] ; then
 	    for l in $CALL_LIST; do
 		local snake_l=$(to_snakecase <<< $l)
 		echo "int osc_${snake_l}(struct osc_env *e, struct osc_str *out, struct osc_${snake_l}_arg *args);"
 	    done
-	elif [ $have_func_code == 0 ]; then
+	elif [ "$arg_check" == "____func_code____" ]; then
 	    for x in $CALL_LIST; do
 		local snake_x=$(to_snakecase <<< $x)
 		local args=$(json-search ${x}Request < osc-api.json \
