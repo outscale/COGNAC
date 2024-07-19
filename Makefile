@@ -24,16 +24,19 @@ include config.mk
 
 include oapi-cli.mk
 
-main.c: osc-api.json call_list arguments-list.json config.sh main_tpl.c cognac_gen.sh mk_args.c.sh
+bin/line_check:
+	$(CC) bin/line_check.c -o bin/line_check
+
+main.c: bin/line_check osc-api.json call_list arguments-list.json config.sh main_tpl.c cognac_gen.sh mk_args.c.sh
 	./cognac_gen.sh main_tpl.c main.c c
 
-osc_sdk.c: osc-api.json call_list arguments-list.json config.sh lib.c cognac_gen.sh construct_data.c.sh mk_args.c.sh
+osc_sdk.c: bin/line_check osc-api.json call_list arguments-list.json config.sh lib.c cognac_gen.sh construct_data.c.sh mk_args.c.sh
 	./cognac_gen.sh lib.c osc_sdk.c c
 
-osc_sdk.h: osc-api.json call_list arguments-list.json config.sh lib.h cognac_gen.sh mk_args.c.sh
+osc_sdk.h: bin/line_check osc-api.json call_list arguments-list.json config.sh lib.h cognac_gen.sh mk_args.c.sh
 	./cognac_gen.sh lib.h osc_sdk.h c
 
-oapi-cli-completion.bash: osc-api.json call_list arguments-list.json config.sh oapi-cli-completion-tpl.bash cognac_gen.sh
+oapi-cli-completion.bash: bin/line_check osc-api.json call_list arguments-list.json config.sh oapi-cli-completion-tpl.bash cognac_gen.sh
 	./cognac_gen.sh oapi-cli-completion-tpl.bash oapi-cli-completion.bash bash
 
 config.sh:
