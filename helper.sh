@@ -4,6 +4,15 @@ OSC_API_JSON=$(cat ./osc-api.json)
 
 get_type_direct() {
     arg_info="$1"
+    local direct_ref=$(jq -r '.["$ref"]' 2> /dev/null <<< $arg_info)
+    local have_direct_ref=$?
+    if [ $have_direct_ref == 0 -a "$direct_ref" != 'null' ]; then
+    	ref_path=$(echo $direct_ref |  cut -c 2- | sed 's|/|.|g')
+	local direct_ref_properties=$(jq $ref_path.properties <<< $OSC_API_JSON 2> /dev/null)
+	if [ "$direct_ref_properties" == 'null' ]; then
+    	    arg_info="$(jq $ref_path <<< $OSC_API_JSON)"
+	fi
+    fi
     local types=$(jq -r .type 2> /dev/null <<< $arg_info)
     local have_type=$?
     local one_of=$(jq -r .oneOf 2> /dev/null <<< $arg_info)
@@ -36,7 +45,17 @@ get_type_direct() {
 		elif [ "$sub_type" == 'number' ]; then
 		    types="array double"
 		elif [ "$sub_type" == 'null' ]; then
-		    types="array ref $(json-search -R '$ref' <<< ${arg_info} | cut  -d '/' -f 4)"
+		    local osub_ref=$(json-search -R '$ref' <<< ${arg_info})
+		    local sub_ref=$(cut  -d '/' -f 4 <<< $osub_ref 2> /dev/null)
+		    local sub_ref_properties=$(jq $osub_ref.properties <<< $OSC_API_JSON 2> /dev/null)
+		    osub_ref=$(cut -c 2- <<< $osub_ref | sed 's|/|.|g')
+		    if [ "$sub_ref_properties" == '' ]; then
+    			local arg_info="$(jq $osub_ref <<< $OSC_API_JSON)"
+			local dtypes=$(json-search $limit -R type 2> /dev/null <<< $arg_info)
+			types="array $dtypes"
+		    else
+			types="array ref $sub_ref"
+		    fi
 		else
 		    types="array ${sub_type}"
 		fi
@@ -73,12 +92,15 @@ get_type_description_() {
 
 get_sub_type_description() {
     local st_info=$(jq .components.schemas.$1 <<<  $OSC_API_JSON)
-    echo $st_info | jq .description | fold -s -w64 | sed "s/^/${2}/"
-    local properties=$(json-search -K properties <<< $st_info | tr -d '"[],')
+    echo $st_info | jq .description | fold -s -w74 | sed "s/^/${2}/"
+    local properties=$(json-search -Kn properties <<< $st_info | tr -d '"[],')
     local o_type="$4"
-    #echo $properties
+    if [ "$properties" == "null" ]; then
+	return
+    fi
     for p in $properties; do
 	local properties=$(json-search $p <<< $st_info)
+
 	local desc=$(jq .description <<< $properties)
 	local type=$(get_type_direct "$properties")
 	local show_idx=""
@@ -118,6 +140,17 @@ get_type() {
     x=$2
     func=$1
     local arg_info=$(json-search ${func}Request <<< $OSC_API_JSON | json-search $x)
+    local direct_ref=$(jq -r '.["$ref"]' 2> /dev/null <<< $arg_info)
+    local have_direct_ref=$?
+    if [ $have_direct_ref == 0 -a "$direct_ref" != 'null' ]; then
+    	ref_path=$(echo $direct_ref |  cut -c 2- | sed 's|/|.|g')
+	local direct_ref_properties=$(jq $ref_path.properties <<< $OSC_API_JSON 2> /dev/null)
+	if [ "$direct_ref_properties" == 'null' ]; then
+    	    arg_info="$(jq $ref_path <<< $OSC_API_JSON)"
+	fi
+    fi
+
+
     local one_of=$(jq -r .oneOf 2> /dev/null <<< $arg_info)
     local have_one_of=$?
     local limit=""
@@ -137,11 +170,20 @@ get_type() {
 	    echo bool
 	    return 0
 	elif [ "$types" == 'array' ]; then
-	    sub_ref=$(json-search -R '$ref' <<< ${arg_info} | cut  -d '/' -f 4 2> /dev/null)
-	    have_sref=$?
+	    local osub_ref=$(json-search -R '$ref' <<< ${arg_info})
+	    local have_sref=$?
+	    local sub_ref=$(cut  -d '/' -f 4 <<< $osub_ref 2> /dev/null)
+	    osub_ref=$(cut -c 2- <<< $osub_ref | sed 's|/|.|g')
 
 	    if [ $have_sref == 0 ]; then
-		types="array ref $sub_ref"
+		local sub_ref_properties=$(jq $osub_ref.properties <<< $OSC_API_JSON 2> /dev/null)
+		if [ "$sub_ref_properties" == '' ]; then
+    		    local arg_info="$(jq $osub_ref <<< $OSC_API_JSON)"
+		    local dtypes=$(json-search $limit -R type 2> /dev/null <<< $arg_info)
+		    types="array $dtypes"
+		else
+		    types="array ref $sub_ref"
+		fi
 	    fi
 	fi
 	echo $types
