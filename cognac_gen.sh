@@ -23,7 +23,7 @@ dash_this_arg()
     cur="$cur.$arg"
     if [ "ref" == $( echo "$t" | cut -d ' ' -f 1) ]; then
 	local st=$( echo $t | cut -f 2 -d ' ' )
-	local st_info=$(jq .components.schemas.$st <<< $OSC_API_JSON)
+	local st_info=$(jq .components.schemas.$st < osc-api.json)
 	local st_args=$(json-search -K properties <<< "$st_info"- | tr -d '"[],')
 
 	for st_arg in $st_args; do
@@ -43,7 +43,7 @@ dash_this()
 
     if [ "ref" == $( echo "$t" | cut -d ' ' -f 1) ]; then
 	local st=$( echo $t | cut -f 2 -d ' ' )
-	local st_info=$(jq .components.schemas.$st <<< $OSC_API_JSON)
+	local st_info=$(jq .components.schemas.$st < osc-api.json)
 	local st_args=$(json-search -K properties <<< "$st_info"- | tr -d '"[],')
 
 	for st_arg in $st_args; do
@@ -174,7 +174,7 @@ EOF
 
 replace_args()
 {
-    API_VERSION=$(json-search -R version <<< $OSC_API_JSON)
+    API_VERSION=$(json-search -R version < osc-api.json)
     SDK_VERSION=$(cat sdk-version)
     while IFS= read -r line
     do
@@ -222,7 +222,7 @@ replace_args()
 	    D2=$(cut -d ';' -f 2  <<< $DELIMES | tr -d "'")
 	    D3=$(cut -d ';' -f 3  <<< $DELIMES | tr -d "'")
 	    for x in $CALL_LIST ; do
-		st_info=$(json-search -s  ${x}Request <<< $OSC_API_JSON)
+		st_info=$(json-search -s  ${x}Request < osc-api.json)
 		A_LST=$(json-search -K properties <<< $st_info | tr -d '",[]')
 
 		echo -en $D1
@@ -247,7 +247,7 @@ replace_args()
 	    done
 	    echo -ne $D3
 	elif [ $have_complex_struct_to_string_func == 0 ]; then
-	    COMPLEX_STRUCT=$(jq .components <<< $OSC_API_JSON | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response | grep -v Request)
+	    COMPLEX_STRUCT=$(jq .components < osc-api.json | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response | grep -v Request)
 
 	    for s in $COMPLEX_STRUCT; do
 		struct_name=$(to_snakecase <<< $s)
@@ -276,7 +276,7 @@ EOF
 		fi
 	    done
 	elif [ $have_complex_struct_func_parser == 0 ]; then
-	    COMPLEX_STRUCT=$(jq .components <<< $OSC_API_JSON | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response | grep -v Request)
+	    COMPLEX_STRUCT=$(jq .components < osc-api.json | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response | grep -v Request)
 
 	    # prototypes
 	    for s in $COMPLEX_STRUCT; do
@@ -320,7 +320,7 @@ EOF
 	elif [ $have_cli_parser == 0 ] ; then
 	    for l in $CALL_LIST; do
 		snake_l=$(to_snakecase <<< $l)
-		arg_list=$(json-search ${l}Request <<< $OSC_API_JSON \
+		arg_list=$(json-search ${l}Request < osc-api.json \
 			       | json-search -K properties \
 			       | tr -d "[]\"," | sed '/^$/d')
 
@@ -433,7 +433,7 @@ EOF
 	elif [ $have_func_code == 0 ]; then
 	    for x in $CALL_LIST; do
 		local snake_x=$(to_snakecase <<< $x)
-		local args=$(json-search ${x}Request <<< $OSC_API_JSON \
+		local args=$(json-search ${x}Request < osc-api.json \
 				 | json-search -K properties  | tr -d "[]\",")
 		dashed_args=""
 		for arg in $args; do

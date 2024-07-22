@@ -7,10 +7,10 @@ func=$1
 source ./helper.sh
 
 if [ "complex_struct" == "$2" ]; then
-    args=$(jq .components.schemas.$func <<<  $OSC_API_JSON | json-search -Kn properties | tr -d '",[]')
+    args=$(jq .components.schemas.$func < osc-api.json | json-search -Kn properties | tr -d '",[]')
     alias get_type=get_type2
 else
-    args=$(json-search ${func}Request <<<  $OSC_API_JSON | json-search -Kn properties | tr -d "\n[],\"" | sed 's/  / /g')
+    args=$(json-search ${func}Request < osc-api.json | json-search -Kn properties | tr -d "\n[],\"" | sed 's/  / /g')
 fi
 
 if [ "$args" == "null" ]; then
