@@ -8,9 +8,9 @@ get_type_direct() {
     local have_direct_ref=$?
     if [ $have_direct_ref == 0 -a "$direct_ref" != 'null' ]; then
     	ref_path=$(cut -c 2- <<< $direct_ref | sed 's|/|.|g')
-	local direct_ref_properties=$(jq $ref_path.properties <<< $OSC_API_JSON 2> /dev/null)
+	local direct_ref_properties=$(jq $ref_path.properties < osc-api.json 2> /dev/null)
 	if [ "$direct_ref_properties" == 'null' ]; then
-    	    arg_info="$(jq $ref_path <<< $OSC_API_JSON)"
+    	    arg_info="$(jq $ref_path < osc-api.json)"
 	fi
     fi
     local types=$(jq -r .type 2> /dev/null <<< $arg_info)
@@ -47,10 +47,10 @@ get_type_direct() {
 		elif [ "$sub_type" == 'null' ]; then
 		    local osub_ref=$(json-search -R '$ref' <<< ${arg_info})
 		    local sub_ref=$(cut  -d '/' -f 4 <<< $osub_ref 2> /dev/null)
-		    local sub_ref_properties=$(jq $osub_ref.properties <<< $OSC_API_JSON 2> /dev/null)
+		    local sub_ref_properties=$(jq $osub_ref.properties < osc-api.json 2> /dev/null)
 		    osub_ref=$(cut -c 2- <<< $osub_ref | sed 's|/|.|g')
 		    if [ "$sub_ref_properties" == '' ]; then
-    			local arg_info="$(jq $osub_ref <<< $OSC_API_JSON)"
+    			local arg_info="$(jq $osub_ref < osc-api.json)"
 			local dtypes=$(json-search $limit -R type 2> /dev/null <<< $arg_info)
 			types="array $dtypes"
 		    else
@@ -81,7 +81,7 @@ get_type3() {
 get_type2() {
     struct="$1"
     arg="$2"
-    st_info=$(jq .components.schemas.$struct <<< $OSC_API_JSON)
+    st_info=$(jq .components.schemas.$struct < osc-api.json)
 
     get_type3 "$st_info" "$arg"
 }
@@ -139,14 +139,14 @@ get_type_description() {
 get_type() {
     x=$2
     func=$1
-    local arg_info=$(json-search ${func}Request <<< $OSC_API_JSON | json-search $x)
+    local arg_info=$(json-search ${func}Request < osc-api.json | json-search $x)
     local direct_ref=$(jq -r '.["$ref"]' 2> /dev/null <<< $arg_info)
     local have_direct_ref=$?
     if [ $have_direct_ref == 0 -a "$direct_ref" != 'null' ]; then
     	ref_path=$(cut -c 2- <<< $direct_ref | sed 's|/|.|g')
-	local direct_ref_properties=$(jq $ref_path.properties <<< $OSC_API_JSON 2> /dev/null)
+	local direct_ref_properties=$(jq $ref_path.properties < osc-api.json 2> /dev/null)
 	if [ "$direct_ref_properties" == 'null' ]; then
-    	    arg_info="$(jq $ref_path <<< $OSC_API_JSON)"
+    	    arg_info="$(jq $ref_path < osc-api.json)"
 	fi
     fi
 
@@ -176,9 +176,9 @@ get_type() {
 	    osub_ref=$(cut -c 2- <<< $osub_ref | sed 's|/|.|g')
 
 	    if [ $have_sref == 0 ]; then
-		local sub_ref_properties=$(jq $osub_ref.properties <<< $OSC_API_JSON 2> /dev/null)
+		local sub_ref_properties=$(jq $osub_ref.properties < osc-api.json 2> /dev/null)
 		if [ "$sub_ref_properties" == '' ]; then
-    		    local arg_info="$(jq $osub_ref <<< $OSC_API_JSON)"
+    		    local arg_info="$(jq $osub_ref < osc-api.json)"
 		    local dtypes=$(json-search $limit -R type 2> /dev/null <<< $arg_info)
 		    types="array $dtypes"
 		else
