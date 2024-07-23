@@ -87,12 +87,12 @@ get_type2() {
 }
 
 get_type_description_() {
-    echo "$1" | jq .properties.$2.description
+    jq .properties.$2.description <<< "$1"
 }
 
 get_sub_type_description() {
-    local st_info=$(jq .components.schemas.$1 <<<  $OSC_API_JSON)
-    echo $st_info | jq .description | fold -s -w74 | sed "s/^/${2}/"
+    local st_info=$(jq .components.schemas.$1 < osc-api.json)
+    jq .description <<< $st_info | fold -s -w74 | sed "s/^/${2}/"
     local properties=$(json-search -Kn properties <<< $st_info | tr -d '"[],')
     local o_type="$4"
     if [ "$properties" == "null" ]; then
@@ -110,7 +110,7 @@ get_sub_type_description() {
 	fi
 	echo "${2}--${3}.${show_idx}$p: $type"
 	if [ "$desc" != "null" ]; then
-	    echo $desc | fold -s -w74 | sed "s/^/${2}  /"
+	    fold -s -w74 <<< $desc | sed "s/^/${2}  /"
 	fi
 	local sub=$(json-search -R '$ref' <<< $properties 2>&1 )
 	if [ "$sub" != 'null' -a "$sub" != "nothing found" ]; then
