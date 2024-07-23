@@ -24,8 +24,8 @@ include config.mk
 
 include oapi-cli.mk
 
-bin/line_check:
-	$(CC) bin/line_check.c -o bin/line_check
+bin/line_check: bin/line_check.c
+	$(CC) -O3 bin/line_check.c -o bin/line_check
 
 main.c: bin/line_check osc-api.json call_list arguments-list.json config.sh main_tpl.c cognac_gen.sh mk_args.c.sh
 	./cognac_gen.sh main_tpl.c main.c c
@@ -58,7 +58,7 @@ call_list: osc-api.json
 
 
 clean:
-	rm -vf osc-api.json call_list osc_sdk.c arguments-list.json osc_sdk.h main.c oapi-cli config.sh oapi-cli-completion.bash
+	rm -vf osc-api.json call_list osc_sdk.c arguments-list.json osc_sdk.h main.c oapi-cli config.sh oapi-cli-completion.bash bin/line_check
 
 .PHONY: clean list_api_version help
 
