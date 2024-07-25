@@ -95,15 +95,39 @@ EOF
     elif [ 'array integer' == "$type" -o 'array string' == "$type" -o 'array double' == "$type" ]; then
 
 
-	convertor=""
+	local convertor=""
+	local null_val='""'
 	if [ 'array integer' == "$type" ]; then
 	    convertor=atoi
+	    null_val=0
 	elif [ 'array double' == "$type" ]; then
 	    convertor=atof
+	    null_val=0.0
 	fi
 	cat <<EOF
-${indent_plus}	 TRY(!aa, "$a argument missing\n");
-${indent_plus}   s->${snake_a}_str = aa;
+${indent_plus}     if (aret == '.') {
+${indent_plus}          int pos;
+${indent_plus}          char *endptr;
+${indent_plus}          int last = 0;
+${indent_plus}          char *dot_pos = strchr(str, '.');
+
+${indent_plus}          TRY(!(dot_pos++), "$a argument missing\n");
+${indent_plus}          pos = strtoul(dot_pos, &endptr, 0);
+${indent_plus}          TRY(endptr == dot_pos, "$a require an index\n");
+${indent_plus}          if (s->${snake_a}) {
+${indent_plus}                  for (; s->${snake_a}[last]; ++last);
+${indent_plus}          }
+${indent_plus}          if (pos < last) {
+${indent_plus}                  s->${snake_a}[pos] = ${convertor}(aa);
+${indent_plus}          } else {
+${indent_plus}                  for (int i = last; i < pos; ++i)
+${indent_plus}                          SET_NEXT(s->${snake_a}, $null_val, pa);
+${indent_plus}                  SET_NEXT(s->${snake_a}, ${convertor}(aa), pa);
+${indent_plus}          }
+${indent_plus}     } else {
+${indent_plus}	       TRY(!aa, "$a argument missing\n");
+${indent_plus}         s->${snake_a}_str = aa;
+${indent_plus}     }
 $indent_base } else if (!(aret = strcmp(str, "$a[]")) || aret == '=') {
 ${indent_plus}   TRY(!aa, "$a[] argument missing\n");
 ${indent_plus}   SET_NEXT(s->${snake_a}, ${convertor}(aa), pa);
@@ -287,7 +311,7 @@ EOF
 			t=$(get_type2 "$s" "$a")
 			snake_n=$(to_snakecase <<< $a)
 
-			echo "	if ((aret = argcmp(str, \"$a\")) == 0 || aret == '=') {"
+			echo "	if ((aret = strcmp(str, \"$a\")) == 0 || aret == '=' || aret == '.') {"
 			cli_c_type_parser "$a" "$t" "        "
 		    done
 		    cat <<EOF
@@ -361,7 +385,7 @@ EOF
 		    snake_a=$(to_snakecase <<< $a)
 
 		    cat <<EOF
-			      if ((aret = argcmp(next_a, "$a")) == 0 || aret == '=' ) {
+			      if ((aret = strcmp(next_a, "$a")) == 0 || aret == '='  || aret == '.') {
 			      	 char *eq_ptr = strchr(next_a, '=');
 			      	 if (eq_ptr) {
 				    TRY((!*eq_ptr), "$a argument missing\n");
