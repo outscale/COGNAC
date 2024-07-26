@@ -35,7 +35,7 @@ EOF
     fi
     if [ "--wget-json-search" = $( echo "$arg" | cut -d '=' -f 1) ]; then
 	rm json-search-x86_64.AppImage
-	wget https://github.com/cosmo-ray/json-search/releases/download/0.2/json-search-x86_64.AppImage
+	wget https://github.com/cosmo-ray/json-search/releases/download/0.3.1/json-search-x86_64.AppImage
 	chmod +x json-search-x86_64.AppImage
 	JSON_SEARCH="./json-search-x86_64.AppImage"
     elif [ "--list-api-versions" = $arg ]; then
