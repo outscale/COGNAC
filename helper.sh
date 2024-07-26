@@ -47,9 +47,9 @@ get_type_direct() {
 		elif [ "$sub_type" == 'null' ]; then
 		    local osub_ref=$(json-search -R '$ref' <<< ${arg_info})
 		    local sub_ref=$(cut  -d '/' -f 4 <<< $osub_ref 2> /dev/null)
-		    local sub_ref_properties=$(jq $osub_ref.properties < osc-api.json 2> /dev/null)
 		    osub_ref=$(cut -c 2- <<< $osub_ref | sed 's|/|.|g')
-		    if [ "$sub_ref_properties" == '' ]; then
+		    local sub_ref_properties=$(jq $osub_ref.properties < osc-api.json 2> /dev/null)
+		    if [ "$sub_ref_properties" == 'null' ] || [ "$sub_ref_properties" == '' ]; then
     			local arg_info="$(jq $osub_ref < osc-api.json)"
 			local dtypes=$(json-search $limit -R type 2> /dev/null <<< $arg_info)
 			types="array $dtypes"
