@@ -116,7 +116,11 @@ static int argcmp2(const char *s1, const char *s2, char dst)
 
 static int argcmp(const char *s1, const char *s2)
 {
-	return argcmp2(s1, s2, '.');
+	while (*s1 == *s2 && *s1 && *s2) {
+                s1++;
+                s2++;
+        }
+        return *s1 - *s2;
 }
 
 #define MAX_FILES_PER_CMD 64
