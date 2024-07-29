@@ -128,7 +128,7 @@ ${indent_plus}     } else {
 ${indent_plus}	       TRY(!aa, "$a argument missing\n");
 ${indent_plus}         s->${snake_a}_str = aa;
 ${indent_plus}     }
-$indent_base } else if (!(aret = strcmp(str, "$a[]")) || aret == '=') {
+$indent_base } else if (!(aret = argcmp(str, "$a[]")) || aret == '=') {
 ${indent_plus}   TRY(!aa, "$a[] argument missing\n");
 ${indent_plus}   SET_NEXT(s->${snake_a}, ${convertor}(aa), pa);
 $indent_base } else
@@ -311,7 +311,7 @@ EOF
 			t=$(get_type2 "$s" "$a")
 			snake_n=$(to_snakecase <<< $a)
 
-			echo "	if ((aret = strcmp(str, \"$a\")) == 0 || aret == '=' || aret == '.') {"
+			echo "	if ((aret = argcmp(str, \"$a\")) == 0 || aret == '=' || aret == '.') {"
 			cli_c_type_parser "$a" "$t" "        "
 		    done
 		    cat <<EOF
@@ -385,7 +385,7 @@ EOF
 		    snake_a=$(to_snakecase <<< $a)
 
 		    cat <<EOF
-			      if ((aret = strcmp(next_a, "$a")) == 0 || aret == '='  || aret == '.') {
+			      if ((aret = argcmp(next_a, "$a")) == 0 || aret == '='  || aret == '.') {
 			      	 char *eq_ptr = strchr(next_a, '=');
 			      	 if (eq_ptr) {
 				    TRY((!*eq_ptr), "$a argument missing\n");
