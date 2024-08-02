@@ -5,7 +5,7 @@
 
 configure COGNAC using `./configure`, then use either `cognac_gen.sh SOURCE DEST LANGUAGE` directly, or the Makefile.
 
-*note: the primary use of this repo, is to generate source code, do not use this repo if your goal is to compile [osc-sdk-c](https://github.com/outscale/osc-sdk-c) or oapi-cli, but use they own repo instead, that take care of the code generation for you*
+*note: The main purpose of this repository is to generate source code. If your goal is to compile osc-sdk-c or oapi-cli, please use their respective repositories, which handle the code generation process for you.*
 
 ## Dependency
 
