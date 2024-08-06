@@ -1,7 +1,7 @@
 # Generator for Outscale API.
 [![Project Sandbox](https://docs.outscale.com/fr/userguide/_images/Project-Sandbox-yellow.svg)](https://docs.outscale.com/en/userguide/Open-Source-Projects.html)
 
-## using
+## Usage
 
 configure COGNAC using `./configure`, then use either `cognac_gen.sh SOURCE DEST LANGUAGE` directly, or the Makefile.
 
