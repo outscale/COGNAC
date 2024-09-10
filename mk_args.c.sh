@@ -14,11 +14,13 @@ type_to_ctype() {
     local snake_name="$2"
     local c_type="char *"
 
-    if [ "$t" == 'int' -o "$t" == 'bool' -o "$t" == 'double' ]; then
+    if [ "$t" == 'int' -o "$t" == 'bool' -o "$t" == 'double' -o "$t" == 'long long int' ]; then
 	snake_name=$( if [ "default" == "$snake_name" ] ; then echo default_arg; else echo $snake_name; fi )
 	echo "        int is_set_${snake_name};"
 	if [ "$t" == 'double' ]; then
 	    c_type="double "
+	elif [ "$t" == 'long long int' ]; then
+	    c_type="long long int "
 	else
 	    c_type="int "
 	fi

@@ -19,7 +19,7 @@ get_type_direct() {
     local have_one_of=$?
     if [ $have_type == 0 -a "$types" != 'null' ]; then
 	if [ "$types" == 'integer' ]; then
-	    echo int
+	    echo "long long int"
 	    return 0
 	elif [ "$types" == 'number' ]; then
 	    echo double
@@ -161,7 +161,7 @@ get_type() {
     have_type=$?
     if [ $have_type == 0 ]; then
 	if [ "$types" == 'integer' ]; then
-	    echo int
+	    echo "long long int"
 	    return 0
 	elif [ "$types" == 'number' ]; then
 	    echo double

@@ -73,6 +73,13 @@ ${indent_plus}s->is_set_$snake_a = 1;
 ${indent_plus}s->$snake_a = atoi(aa);
 $indent_base } else
 EOF
+    elif [ 'long long int' == "$type" ]; then
+	cat <<EOF
+${indent_plus}TRY(!aa, "$a argument missing\n");
+${indent_plus}s->is_set_$snake_a = 1;
+${indent_plus}s->$snake_a = atoll(aa);
+$indent_base } else
+EOF
     elif [ 'double' == "$type" ]; then
 	    cat <<EOF
 ${indent_plus}TRY(!aa, "$a argument missing\n");

@@ -22,6 +22,10 @@ for x in $args ;do
     snake_x=$( if [ "default" == "$snake_x" ] ; then echo default_arg; else echo $snake_x; fi )
     t=$(get_type $func $x)
 
+    if [ "$t" == 'long long int' ]; then
+	t='int'
+    fi
+
     if [ "$t" == 'bool' ]; then
 	cat <<EOF
 	if (args->is_set_$snake_x) {
