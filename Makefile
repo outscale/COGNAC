@@ -24,6 +24,9 @@ include config.mk
 
 include oapi-cli.mk
 
+bin/funclist: bin/funclist.c
+	$(CC) -O3 bin/funclist.c $(JSON_C_LDFLAGS) $(JSON_C_CFLAGS) -o bin/funclist
+
 bin/line_check: bin/line_check.c
 	$(CC) -O3 bin/line_check.c -o bin/line_check
 
@@ -53,8 +56,8 @@ arguments-list.json: osc-api.json
 	| tr -d "\n[],\"" | sed -r 's/ +/ \n/g' \
 	| sort | uniq | tr -d "\n" > arguments-list.json
 
-call_list: osc-api.json
-	$(JSON_SEARCH) operationId osc-api.json | tr -d "\n[]\"" | sed 's/,/ /g' > call_list
+call_list: osc-api.json bin/funclist
+	bin/funclist osc-api.json > call_list
 
 
 clean:
