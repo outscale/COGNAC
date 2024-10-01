@@ -1,7 +1,5 @@
 source ./config.sh
 
-OSC_API_JSON=$(cat ./osc-api.json)
-
 get_type_direct() {
     arg_info="$1"
     local direct_ref=$(jq -r '.["$ref"]' 2> /dev/null <<< $arg_info)

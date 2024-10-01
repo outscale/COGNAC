@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-OSC_API_JSON=$(cat ./osc-api.json)
-
 CALL_LIST_FILE=./call_list
 CALL_LIST=$(cat $CALL_LIST_FILE)
 
