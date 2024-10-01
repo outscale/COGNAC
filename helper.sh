@@ -15,6 +15,12 @@ get_type_direct() {
     local have_type=$?
     local one_of=$(jq -r .oneOf 2> /dev/null <<< $arg_info)
     local have_one_of=$?
+    local any_of=$(jq -r .anyOf 2> /dev/null <<< $arg_info)
+    local have_any_of=$?
+    if [ $have_any_of == 0 -a "$any_of" != 'null'  ]; then
+	one_of="$any_of"
+	have_any_of=have_one_of
+    fi
     if [ $have_type == 0 -a "$types" != 'null' ]; then
 	if [ "$types" == 'integer' ]; then
 	    echo "long long int"
