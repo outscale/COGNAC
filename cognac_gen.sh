@@ -203,7 +203,7 @@ EOF
 
 replace_args()
 {
-    API_VERSION=$(json-search -R version < osc-api.json)
+    API_VERSION=$(jq -r .info.version < osc-api.json)
     SDK_VERSION=$(cat sdk-version)
     while IFS= read -r line
     do
