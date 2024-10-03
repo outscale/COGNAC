@@ -15,6 +15,7 @@ LD_CURLLIB_PATH=''
 LD_JSONCLIB_PATH=''
 API_VERSION=master
 SDK_VERSION=0xC061AC
+CLI_NAME=oapi-cli
 
 for arg in $@; do
     if [ "--help" = $arg ]; then
@@ -24,6 +25,7 @@ for arg in $@; do
    --compile-json-c			compile json-c
    --wget-json-search			wget json-search.Appimage
    --gnu-sed-alias			use gsed for sed
+   --cli-name=Name			set cli name, default: oapi-cli
    --yq-go                              use go version of yq, that use diferents arguments
    --curl-path=PATH			path to curl source root
    --sdk-version			sdk-version to generate (format 0xMajMajminMinPatchPatch(0x000302))
@@ -65,6 +67,8 @@ EOF
 	SED_ALIAS="'alias sed=gsed'"
     elif [ "--target-api" = $( echo "$arg" | cut -d '=' -f 1) ]; then
 	API_VERSION=$( echo $arg | cut -f 2 -d '=' )
+    elif [ "--cli-name" = $( echo "$arg" | cut -d '=' -f 1) ]; then
+	CLI_NAME=$( echo $arg | cut -f 2 -d '=' )
     elif [ "--sdk-version" = $( echo "$arg" | cut -d '=' -f 1) ]; then
 	SDK_VERSION=$( echo $arg | cut -f 2 -d '=' )
     elif [ "--curl-path" = $( echo "$arg" | cut -d '=' -f 1) ]; then
@@ -103,6 +107,7 @@ echo JSON_C_LDFLAGS=$JSON_C_LDFLAGS >> config.mk
 echo JSON_C_CFLAGS=$JSON_C_CFLAGS >> config.mk
 echo JSON_C_RULE=$JSON_C_RULE >> config.mk
 echo API_VERSION=$API_VERSION >> config.mk
+echo CLI_NAME=$CLI_NAME >> config.mk
 echo $SDK_VERSION > sdk-version
 echo "config done:"
 cat config.mk
