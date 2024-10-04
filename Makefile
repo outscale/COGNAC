@@ -49,10 +49,6 @@ config.sh:
 	echo "alias json-search=$(JSON_SEARCH)" > config.sh
 	echo $(SED_ALIAS) >> config.sh
 
-osc-api.json:
-	curl -s https://raw.githubusercontent.com/outscale/osc-api/$(API_VERSION)/outscale.yaml \
-		| yq $(YQ_ARG) > osc-api.json
-
 arguments-list.json: osc-api.json
 	$(JSON_SEARCH) -s Request osc-api.json  | $(JSON_SEARCH) -K properties \
 	| sed 's/]/ /g' \
@@ -64,7 +60,7 @@ call_list: osc-api.json bin/funclist
 
 
 clean:
-	rm -vf osc-api.json call_list osc_sdk.c arguments-list.json osc_sdk.h main.c $(CLI_NAME) config.sh $(CLI_NAME)-completion.bash bin/line_check
+	rm -vf osc-api.json call_list osc_sdk.c arguments-list.json osc_sdk.h main.c $(CLI_NAME) config.sh $(CLI_NAME)-completion.bash bin/line_check bin/funclist
 
 .PHONY: clean list_api_version help make_cli
 
