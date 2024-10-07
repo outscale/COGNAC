@@ -48,6 +48,7 @@ $(CLI_NAME)-completion.bash: bin/line_check osc-api.json call_list arguments-lis
 config.sh:
 	echo "alias json-search=$(JSON_SEARCH)" > config.sh
 	echo $(SED_ALIAS) >> config.sh
+	echo "export CLI_NAME=$(CLI_NAME)" >> config.sh
 
 arguments-list.json: osc-api.json
 	$(JSON_SEARCH) -s Request osc-api.json  | $(JSON_SEARCH) -K properties \
