@@ -3,6 +3,9 @@ name: Generate source build
 on:
   push:
     branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
 
 jobs:
   build:
@@ -16,7 +19,7 @@ jobs:
       run: |
         sudo snap install yq
         sudo apt-get update --fix-missing
-        sudo apt-get install -y -f -o Acquire::Retries=3 libfuse2
+        sudo apt-get install -y -f -o Acquire::Retries=3 libfuse2 jq libjson-c-dev libcurl4-openssl-dev pkg-config
 
     - name: configure
       run: ./configure --wget-json-search --yq-go --compile-json-c
@@ -25,6 +28,7 @@ jobs:
       run: |
         sudo chsh -s $(which bash) $(whoami)
         make main.c osc_sdk.c osc_sdk.h oapi-cli-completion.bash
+        make oapi-cli-x86_64.AppImage
 # tar c osc_sdk.c osc_sdk.h main.c oapi-cli-completion.bash > build-src.tar
 
 # commented, because uploading generated source is made in oapi-cli/osc-sdk-c projects
