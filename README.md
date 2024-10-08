@@ -97,7 +97,7 @@ That mean, don't add dependencies that are not already require by a CLI.
 
 Most peoples have hear the sentence "Do One Thing and Do It Well", and heard that's how Unix is and how Unix should be.
 
-I personally don't know how much this true nor a good idea, and like most peoples I use to pretend to understand this, but did not, I don't know if I got it now, but I have a far better understand of what it uses to.
+I personally don't know how much this is true nor a good idea, and like most peoples I use to pretend to understand this, but did not, I don't know if I got it now, but I have a far better understand of what it uses to.
 
 How so ? You didn't ask. By reading source from some Unix OS.
 When I read a complete [shell](https://github.com/dspinellis/unix-history-repo/blob/BSD-1-Snapshot-Development/s1/sh.c), the whole source of [ls](https://github.com/dspinellis/unix-history-repo/blob/BSD-1-Snapshot-Development/s6/ls.c), or a fully running [cat](https://github.com/klange/toaruos/blob/master/apps/cat.c), I got hit by the realisation that most of those programmes take less line of code, that I would need to write half of an object interface in any language.
