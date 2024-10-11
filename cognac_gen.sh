@@ -207,8 +207,6 @@ replace_args()
     SDK_VERSION=$(cat sdk-version)
     while IFS= read -r line
     do
-	#check ____args____ here
-
 	arg_check=$(bin/line_check ____args____ ____func_code____ ____functions_proto____ ____cli_parser____ ____complex_struct_func_parser____ ____complex_struct_to_string_func____ ____call_list_dec____ ____call_list_descriptions____ ____call_list_args_descriptions____ <<< "$line")
 
 	if [ "$arg_check" == "____args____" ]; then
