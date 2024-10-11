@@ -19,7 +19,7 @@ get_type_direct() {
     local have_any_of=$?
     if [ $have_any_of == 0 -a "$any_of" != 'null'  ]; then
 	one_of="$any_of"
-	have_any_of=have_one_of
+	have_one_of=$have_any_of
     fi
     if [ $have_type == 0 -a "$types" != 'null' ]; then
 	if [ "$types" == 'integer' ]; then
@@ -34,8 +34,15 @@ get_type_direct() {
 	elif [ "$types" == 'array' ]; then
 	    local item_one_off=$(jq -r .items.oneOf 2> /dev/null <<< $arg_info)
 	    local item_is_one_of=$?
+	    local item_any_of=$(jq -r .items.anyOf 2> /dev/null <<< $arg_info)
+	    local item_have_any_of=$?
 	    local sub_type=$(jq -r .items.type 2> /dev/null <<< $arg_info)
 	    have_stype=$?
+	    if [ $item_have_any_of == 0 -a "$item_any_of" != 'null'  ]; then
+		local the_one=$(jq .[0] <<< $item_any_of)
+		sub_type=$(get_type_direct "$the_one")
+		have_stype=0
+	    fi
 	    if [ $item_is_one_of == 0 -a "$item_one_off" != 'null'  ]; then
 		local the_one=$(jq .[0] <<< $item_one_off)
 		sub_type=$(get_type_direct "$the_one")
@@ -103,7 +110,7 @@ get_sub_type_description() {
 	return
     fi
     for p in $properties; do
-	local properties=$(json-search $p <<< $st_info)
+	local properties=$(jq .properties[\"$p\"] <<< $st_info)
 
 	local desc=$(jq .description <<< $properties)
 	local type=$(get_type_direct "$properties")
