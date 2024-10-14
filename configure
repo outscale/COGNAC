@@ -114,7 +114,7 @@ echo JSON_C_CFLAGS=$JSON_C_CFLAGS >> config.mk
 echo JSON_C_RULE=$JSON_C_RULE >> config.mk
 echo API_VERSION=$API_VERSION >> config.mk
 echo CLI_NAME=$CLI_NAME >> config.mk
-echo -e "osc-api.json:\n\t$API_SCRIPT" >> config.mk
+echo -e "osc-api.json::\n\t$API_SCRIPT" >> config.mk
 echo $SDK_VERSION > sdk-version
 echo "config done:"
 cat config.mk

@@ -25,6 +25,9 @@ help:
 
 include oapi-cli.mk
 
+osc-api.json::
+	./bin/osc-api-seems-valid.sh osc-api.json "need_remove"
+
 make_cli: $(CLI_NAME) $(CLI_NAME)-completion.bash
 
 bin/funclist: bin/funclist.c
