@@ -62,8 +62,8 @@ Here’s what the script does:
 3. Renames all components named `XInput` to `XRequest`.
 
 Once this setup is complete, you can now use the Makefile. It's also a good idea to run ./configure --help, as it contains several useful options.
-- `--wget-json-search`: Helps with downloading `json-search`, which can be tricky to install.
-- `--compile-json-c`: Ensures a recent version of `json-c` is compiled, required for color support.
+- `--wget-json-search`: Helps with downloading `json-search`, which can be tricky to install, **If unsure, we recommend using this by default**
+- `--compile-json-c`: Ensures a recent version of `json-c` is compiled, required for color support. **If unsure, we recommend using this by default**
 
 Now, simply run `make` to generate all necessary files and compile the CLI. This will also create a C SDK, consisting of two files: `osc-sdk.c` and `osc-sdk.h`.
 
