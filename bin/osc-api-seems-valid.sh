@@ -1,8 +1,10 @@
 #!/bin/bash
 
 # check if $1 is valide, if $2 is present, remove invalide file
+config_path=$(realpath $(dirname $0))/../config.sh
+
 shopt -s expand_aliases
-source ../config.sh
+source $config_path
 
 test=$(json-search -sn Request $1 | json-search -n properties)
 test_ret=$?
