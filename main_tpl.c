@@ -49,7 +49,7 @@
 
 #define OAPI_CLI_VERSION "____cli_version____"
 
-#define OAPI_CLI_UAGENT "oapi-cli/"OAPI_CLI_VERSION"; osc-sdk-c/"
+#define OAPI_CLI_UAGENT "____cli_name____/"OAPI_CLI_VERSION"; osc-sdk-c/"
 
 #define STRY(f, args...)					\
 	do {							\
@@ -295,9 +295,10 @@ int main(int ac, char **av)
 		} else if (!strcmp("--insecure", av[i])) {
 		  flag |= OSC_INSECURE_MODE;
 		} else if (!strcmp("--version", av[i])) {
-			printf("oapi-cli version: %s\n"
+			printf("%s version: %s\n"
 			       "osc-sdk-c version: %s\n"
 			       "based on osc-api: %s\n",
+			       program_name,
 			       OAPI_CLI_VERSION,
 			       osc_sdk_version_str(),
 			       OSC_API_VERSION);
@@ -401,11 +402,11 @@ int main(int ac, char **av)
                        "\t    --color               try to colorize json if json-c support it\n"
                        "\t    --config=PATH         config file path\n"
 		       "\t    --file PATH           use content of PATH as an agrument for a call, example:\n"
-		       "\t\t\t\toapi-cli CreateCa  --CaPem --file /$CA_DIR/cert.pem\n"
+		       "\t\t\t\t____cli_name____ CreateCa  --CaPem --file /$CA_DIR/cert.pem\n"
 		       "\t    --jsonstr-file PATH   same as --file, except the content is surrounded by \"\n"
 		       "\t\t\t\tand \" inside the file are escape with a \\, this option is useful for CreatePolicy\n"
-		       "\t    --set-var ID=VARIABLE_PATH  Create an oapi-cli variable, that can be use with --var\n"
-		       "\t\t\t\tExamples: ./oapi-cli ReadVms --Filters.TagValues[] VM_NAME --set-var id=Vms.0.VmId ReadVms --Filters.VmIds[] --var id\n"
+		       "\t    --set-var ID=VARIABLE_PATH  Create an ____cli_name____ variable, that can be use with --var\n"
+		       "\t\t\t\tExamples: ____cli_name____ ReadVms --Filters.TagValues[] VM_NAME --set-var id=Vms.0.VmId ReadVms --Filters.VmIds[] --var id\n"
 		       "\t\t\t\twill find the vm with VM_NAME as it's tag, and read it again, but using it's VmId as filter this time\n"
 		       "\t    --var                 use variabble content created by --set-var\n"
                        "\t-h, --help [CallName]     this, can be used with call name, example:\n\t\t\t\t%s --help ReadVms\n"
@@ -416,7 +417,7 @@ int main(int ac, char **av)
                        "\t    --profile=PROFILE     select profile\n"
                        "\t    --raw-print           doesn't format the output\n"
                        "\t    --verbose             curl backend is now verbose\n"
-                       "\t    --version             oapi-cli version info\n%s%s",
+                       "\t    --version             ____cli_name____ version info\n%s%s",
 		       program_name, program_name, help_appent ? help_appent : "",
 		       help_appent ? "\n" : "");
 		return 0;

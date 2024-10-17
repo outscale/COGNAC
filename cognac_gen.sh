@@ -207,8 +207,6 @@ replace_args()
     SDK_VERSION=$(cat sdk-version)
     while IFS= read -r line
     do
-	#check ____args____ here
-
 	arg_check=$(bin/line_check ____args____ ____func_code____ ____functions_proto____ ____cli_parser____ ____complex_struct_func_parser____ ____complex_struct_to_string_func____ ____call_list_dec____ ____call_list_descriptions____ ____call_list_args_descriptions____ <<< "$line")
 
 	if [ "$arg_check" == "____args____" ]; then
@@ -465,7 +463,7 @@ EOF
 		done < function.${lang}
 	    done
 	else
-	    sed "s/____call_list____/${CALL_LIST}/g;s/____piped_call_list____/${PIPED_CALL_LIST}/;s/____api_version____/${API_VERSION}/g;s/____sdk_version____/${SDK_VERSION}/g;s/____cli_version____/$(cat cli-version)/g" <<< "$line";
+	    sed "s/____call_list____/${CALL_LIST}/g;s/____piped_call_list____/${PIPED_CALL_LIST}/;s/____api_version____/${API_VERSION}/g;s/____sdk_version____/${SDK_VERSION}/g;s/____cli_version____/$(cat cli-version)/g;s/____cli_name____/${CLI_NAME}/" <<< "$line";
 	fi
     done < $1
 }

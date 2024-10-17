@@ -6,8 +6,15 @@ int main(int ac, char **av)
 {
 	struct json_object *j_file = json_object_from_file(av[1]);
 
-	struct json_object *compo = json_object_object_get(j_file, "components");
-	struct json_object *schema = json_object_object_get(compo, "schemas");
+	struct json_object *compo;
+	struct json_object *schema;
+	int ret = 0;
+	ret = json_object_object_get_ex(j_file, "components", &compo);
+	if (!ret)
+		return 1;
+	json_object_object_get_ex(compo, "schemas", &schema);
+	if (!ret)
+		return 1;
 	int first = 1;
 
 	json_object_object_foreach(schema, k, v_) {
@@ -23,4 +30,5 @@ int main(int ac, char **av)
 		free(new_k);
 	}
 	json_object_put(j_file);
+	return 0;
 }
