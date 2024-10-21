@@ -7,11 +7,33 @@ func=$1
 source ./helper.sh
 
 if [ "complex_struct" == "$2" ]; then
-    args=$(jq .components.schemas.$func < osc-api.json | json-search -Kn properties | tr -d '",[]')
+    base=$(jq .components.schemas.$func < osc-api.json)
+    args=$(json-search -Kn properties  <<< $base | tr -d '",[]')
     alias get_type=get_type2
 else
-    args=$(json-search ${func}Request < osc-api.json | json-search -Kn properties | tr -d "\n[],\"" | sed 's/  / /g')
+    base=$(json-search ${func}Request < osc-api.json)
+    args=$(json-search -Kn properties <<< $base | tr -d "\n[],\"" | sed 's/  / /g')
 fi
+
+aditional=$(json-search -n additionalProperties <<< $base)
+
+if [ "$aditional" != "null"  -a  "$aditional" != "false" ]; then
+    # no type check are made here, the aditional stuff is assumed to be a string
+    cat <<EOF
+	struct additional_strings **elems = args->additional_strs;
+
+	for (struct additional_strings **e = elems; e && *e; ++e) {
+		TRY_APPEND_COL(count_args, data);
+		STRY(osc_str_append_string(data, "\"" ));
+		STRY(osc_str_append_string(data, (*e)->key ));
+		STRY(osc_str_append_string(data, "\":" ));
+		STRY(osc_str_append_string(data, "\"" ));
+		STRY(osc_str_append_string(data, (*e)->val ));
+		STRY(osc_str_append_string(data, "\"" ));
+	}
+EOF
+fi
+
 
 if [ "$args" == "null" ]; then
     exit
