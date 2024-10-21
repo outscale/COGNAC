@@ -127,6 +127,11 @@ static const char *osc_sdk_version_str(void)
 	return ret;
 }
 
+struct additional_strings {
+	char *key;
+	char *val;
+};
+
 ____args____
 
 int osc_load_ak_sk_from_conf(const char *profile, char **ak, char **sk);

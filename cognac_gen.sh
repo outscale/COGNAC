@@ -304,7 +304,8 @@ EOF
 		#for s in "skip"; do
 		struct_name=$(to_snakecase <<< $s)
 
-		A_LST=$(jq .components.schemas.$s < osc-api.json | json-search -Kn properties | tr -d '",[]')
+		local componant=$(jq .components.schemas.$s < osc-api.json)
+		A_LST=$(json-search -Kn properties <<< $componant | tr -d '",[]')
 		if [ "$A_LST" != "null" ]; then
 		    echo  "int ${struct_name}_parser(void *v_s, char *str, char *aa, struct ptr_array *pa) {"
 
@@ -317,12 +318,30 @@ EOF
 			echo "	if ((aret = argcmp(str, \"$a\")) == 0 || aret == '=' || aret == '.') {"
 			cli_c_type_parser "$a" "$t" "        "
 		    done
-		    cat <<EOF
+		    aditional=$(json-search -n additionalProperties <<< $componant)
+
+		    if [ "$aditional" == "null"  -o  "$aditional" == "false" ]; then
+			cat <<EOF
 	{
 		fprintf(stderr, "'%s' not an argumemt of '$s'\n", str);
 		return -1;
 	}
 EOF
+		    else
+			# no type check are made here, the aditional stuff is assumed to be a string
+			cat <<EOF
+	{
+		struct additional_strings *elem = malloc(sizeof *elem);
+		(void)aret;
+		ptr_array_append(pa, elem);
+
+		SET_NEXT(s->additional_strs, elem, pa);
+		elem->key = str;
+		elem->val = aa;
+	}
+EOF
+		    fi
+
 		    echo "	return 0;"
 		    echo -e '}\n'
 		fi
