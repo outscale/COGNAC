@@ -20,9 +20,9 @@ aditional=$(json-search -n additionalProperties <<< $base)
 if [[ "$aditional" != "null"  &&  "$aditional" != "false" ]]; then
     # no type checks are made here, the additional stuff is assumed to be a string
     cat <<EOF
-	struct additional_strings **elems = args->additional_strs;
+	struct osc_additional_strings **elems = args->additional_strs;
 
-	for (struct additional_strings **e = elems; e && *e; ++e) {
+	for (struct osc_additional_strings **e = elems; e && *e; ++e) {
 		TRY_APPEND_COL(count_args, data);
 		STRY(osc_str_append_string(data, "\"" ));
 		STRY(osc_str_append_string(data, (*e)->key ));

@@ -331,7 +331,7 @@ EOF
 			# no type checks are made here, the additional stuff is assumed to be a string
 			cat <<EOF
 	{
-		struct additional_strings *elem = malloc(sizeof *elem);
+		struct osc_additional_strings *elem = malloc(sizeof *elem);
 		TRY(!elem, "Memory allocation failed");
 		(void)aret;
 		ptr_array_append(pa, elem);
@@ -473,9 +473,7 @@ EOF
 
 		while IFS= read -r fline
 		do
-		    grep ____construct_data____ <<< "$fline" > /dev/null
-		    local have_construct_data=$?
-		    if [ $have_construct_data == 0 ]; then
+		    if [[ $( grep -q ____construct_data____ <<< "$fline" )$? == 0 ]]; then
 			./construct_data.${lang}.sh $x
 		    else
 			sed "s/____func____/$x/g; s/____snake_func____/$snake_x/g;s/____dashed_args____/$dashed_args/g" <<< "$fline"

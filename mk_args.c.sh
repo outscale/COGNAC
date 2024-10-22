@@ -79,7 +79,7 @@ write_struct() {
 
     if [[ "$aditional" != "null"  &&  "$aditional" != "false" ]]; then
 	# no type checks are made here, the additional stuff is assumed to be a string
-	echo -e '\tstruct additional_strings **additional_strs;'
+	echo -e '\tstruct osc_additional_strings **additional_strs;'
     fi
 
     echo -e '};\n'
