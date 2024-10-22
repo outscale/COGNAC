@@ -27,3 +27,10 @@ COGNAC’s templating system is homemade. It reads SRC files and generates DEST 
 For example, you can check out [lib.h](./lib.h) or [main_tpl.c](./main_tpl.c)
 
 Some rules support multiple languages, like `____func_code____`, which generates function calls. Others, like `____functions_proto____`, currently support only C.
+
+
+## tips to add features
+
+A relatively easy way to add a feature in Cognac is to start by modifying the generated code (such as "osc-sdk.c", "main.c", etc.). First, make your changes directly in the generated code, ensure it works as expected, and then modify the generator accordingly. This approach helps you know exactly what to look for in the generator.
+
+For exemple, if you modify a function like `parse_thatarg()` in "osc_sdk.c", once the changes are working, you can then search (using a tool like grep) through the generator code to find where `parse_thatarg` is generated. From there, you can add modifications to the generator to make the change permanent and automated.
