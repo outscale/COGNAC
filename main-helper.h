@@ -42,9 +42,8 @@ struct ptr_array {
  */
 #define OBJ_SIZE 8
 
-/* a is an array of "flexible size", v is the value to push, and pa
- * is use to store the pointer somewhere so we can free everything
- * esilly
+/* a is an array with a flexible size, v is the value to push,
+ * and pa is used to store the pointer so that we can easily free everything later.
  */
 #define SET_NEXT(a,v,pa) do {						\
 		int cnt;						\

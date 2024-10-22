@@ -328,10 +328,11 @@ EOF
 	}
 EOF
 		    else
-			# no type check are made here, the aditional stuff is assumed to be a string
+			# no type checks are made here, the additional stuff is assumed to be a string
 			cat <<EOF
 	{
 		struct additional_strings *elem = malloc(sizeof *elem);
+		TRY(!elem, "Memory allocation failed");
 		(void)aret;
 		ptr_array_append(pa, elem);
 

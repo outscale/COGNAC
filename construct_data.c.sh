@@ -18,7 +18,7 @@ fi
 aditional=$(json-search -n additionalProperties <<< $base)
 
 if [ "$aditional" != "null"  -a  "$aditional" != "false" ]; then
-    # no type check are made here, the aditional stuff is assumed to be a string
+    # no type checks are made here, the additional stuff is assumed to be a string
     cat <<EOF
 	struct additional_strings **elems = args->additional_strs;
 
