@@ -6,7 +6,7 @@ func=$1
 
 source ./helper.sh
 
-if [ "complex_struct" == "$2" ]; then
+if [[ "complex_struct" == "$2" ]]; then
     base=$(jq .components.schemas.$func < osc-api.json)
     args=$(json-search -Kn properties  <<< $base | tr -d '",[]')
     alias get_type=get_type2
@@ -35,7 +35,7 @@ EOF
 fi
 
 
-if [ "$args" == "null" ]; then
+if [[ "$args" == "null" ]]; then
     exit
 fi
 
