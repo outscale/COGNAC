@@ -127,7 +127,7 @@ static const char *osc_sdk_version_str(void)
 	return ret;
 }
 
-struct additional_strings {
+struct osc_additional_strings {
 	char *key;
 	char *val;
 };
