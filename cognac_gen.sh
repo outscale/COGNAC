@@ -320,7 +320,7 @@ EOF
 		    done
 		    aditional=$(json-search -n additionalProperties <<< $componant)
 
-		    if [ "$aditional" == "null"  -o  "$aditional" == "false" ]; then
+		    if [[ "$aditional" == "null" || "$aditional" == "false" ]]; then
 			cat <<EOF
 	{
 		fprintf(stderr, "'%s' not an argumemt of '$s'\n", str);

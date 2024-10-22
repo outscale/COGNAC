@@ -77,7 +77,7 @@ write_struct() {
     done
     aditional=$(json-search -n additionalProperties <<< $st_info)
 
-    if [ "$aditional" != "null"  -a  "$aditional" != "false" ]; then
+    if [[ "$aditional" != "null"  &&  "$aditional" != "false" ]]; then
 	# no type checks are made here, the additional stuff is assumed to be a string
 	echo -e '\tstruct additional_strings **additional_strs;'
     fi
