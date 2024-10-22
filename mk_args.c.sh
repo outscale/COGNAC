@@ -75,7 +75,7 @@ write_struct() {
 
 	type_to_ctype "$t" "$snake_n"
     done
-    aditional=$(json-search -n additionalProperties <<< $st_info)
+    aditional=$(jq .additionalProperties <<< $st_info)
 
     if [[ "$aditional" != "null"  &&  "$aditional" != "false" ]]; then
 	# no type checks are made here, the additional stuff is assumed to be a string

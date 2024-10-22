@@ -15,7 +15,7 @@ else
     args=$(json-search -Kn properties <<< $base | tr -d "\n[],\"" | sed 's/  / /g')
 fi
 
-aditional=$(json-search -n additionalProperties <<< $base)
+aditional=$(jq .additionalProperties <<< $base)
 
 if [[ "$aditional" != "null"  &&  "$aditional" != "false" ]]; then
     # no type checks are made here, the additional stuff is assumed to be a string

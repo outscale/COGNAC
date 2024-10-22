@@ -318,7 +318,7 @@ EOF
 			echo "	if ((aret = argcmp(str, \"$a\")) == 0 || aret == '=' || aret == '.') {"
 			cli_c_type_parser "$a" "$t" "        "
 		    done
-		    aditional=$(json-search -n additionalProperties <<< $componant)
+		    aditional=$(jq .additionalProperties <<< $componant)
 
 		    if [[ "$aditional" == "null" || "$aditional" == "false" ]]; then
 			cat <<EOF
