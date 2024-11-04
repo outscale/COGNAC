@@ -1,5 +1,7 @@
 source ./config.sh
 
+# Retrieve the type from the JSON of a component for a given argument.
+# ex: get_type_direct "$(jq .components.schemas.ReadVmsRequest.properties.VmId < osc-api.json)"
 get_type_direct() {
     arg_info="$1"
     local direct_ref=$(jq -r '.["$ref"]' 2> /dev/null <<< $arg_info)
@@ -81,6 +83,9 @@ get_type_direct() {
     fi
 }
 
+# Retrieve the type directly from the full component JSON rather than using the
+# API function Name in get_type.
+# ex: get_type3 "$(jq .components.schemas.ReadVmsRequest < osc-api.json)" "VmId"
 get_type3() {
     st_info="$1"
     arg="$2"
@@ -89,6 +94,9 @@ get_type3() {
     return 0
 }
 
+# Retrieve the type directly from the full component JSON rather than using the
+# API function name in get_type.
+# ex: get_type2 "ReadVmsRequest" "vmId"
 get_type2() {
     struct="$1"
     arg="$2"
@@ -97,10 +105,12 @@ get_type2() {
     get_type3 "$st_info" "$arg"
 }
 
+# helper for get_type_description
 get_type_description_() {
     jq .properties.$2.description <<< "$1"
 }
 
+# helper for get_type_description
 get_sub_type_description() {
     local st_info=$(jq .components.schemas.$1 < osc-api.json)
     jq .description <<< $st_info | fold -s -w74 | sed "s/^/${2}/"
@@ -132,6 +142,10 @@ get_sub_type_description() {
     done
 }
 
+# Write the description of a component.
+# useful for generating SDK documentation.
+# usage: get_type_description "{FULL COMPONANT JSON}" "ARGUMENT"
+# ex: get_type_description "$(jq .components.schemas.ReadVmsRequest < osc-api.json)" "VmId"
 get_type_description() {
     local properties=$(jq .properties.$2 <<< "$1")
     local desc=$(jq .description <<< "$properties")
@@ -147,6 +161,10 @@ get_type_description() {
     fi
 }
 
+
+# Takes two arguments: an API function name and one of its arguments.
+# ex: get_type ReadVms VmId
+# will write on stdout the type of VmId in ReadVms
 get_type() {
     x=$2
     func=$1
