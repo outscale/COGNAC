@@ -36,16 +36,16 @@ bin/funclist: bin/funclist.c
 bin/line_check: bin/line_check.c
 	$(CC) -O3 bin/line_check.c -o bin/line_check
 
-main.c: bin/line_check osc-api.json call_list arguments-list.json config.sh main_tpl.c cognac_gen.sh mk_args.c.sh
+main.c: bin/line_check osc-api.json call_list config.sh main_tpl.c cognac_gen.sh mk_args.c.sh
 	./cognac_gen.sh main_tpl.c main.c c
 
-osc_sdk.c: bin/line_check osc-api.json call_list arguments-list.json config.sh lib.c cognac_gen.sh construct_data.c.sh mk_args.c.sh
+osc_sdk.c: bin/line_check osc-api.json call_list config.sh lib.c cognac_gen.sh construct_data.c.sh mk_args.c.sh
 	./cognac_gen.sh lib.c osc_sdk.c c
 
-osc_sdk.h: bin/line_check osc-api.json call_list arguments-list.json config.sh lib.h cognac_gen.sh mk_args.c.sh
+osc_sdk.h: bin/line_check osc-api.json call_list config.sh lib.h cognac_gen.sh mk_args.c.sh
 	./cognac_gen.sh lib.h osc_sdk.h c
 
-$(CLI_NAME)-completion.bash: bin/line_check osc-api.json call_list arguments-list.json config.sh oapi-cli-completion-tpl.bash cognac_gen.sh
+$(CLI_NAME)-completion.bash: bin/line_check osc-api.json call_list config.sh oapi-cli-completion-tpl.bash cognac_gen.sh
 	./cognac_gen.sh oapi-cli-completion-tpl.bash $(CLI_NAME)-completion.bash bash
 
 config.sh:
@@ -53,18 +53,12 @@ config.sh:
 	echo $(SED_ALIAS) >> config.sh
 	echo "export CLI_NAME=$(CLI_NAME)" >> config.sh
 
-arguments-list.json: osc-api.json
-	$(JSON_SEARCH) -s Request osc-api.json  | $(JSON_SEARCH) -K properties \
-	| sed 's/]/ /g' \
-	| tr -d "\n[],\"" | sed -r 's/ +/ \n/g' \
-	| sort | uniq | tr -d "\n" > arguments-list.json
-
 call_list: osc-api.json bin/funclist
-	bin/funclist osc-api.json > call_list
+	bin/funclist osc-api.json $(FUNCLIST_ARG) > call_list
 
 
 clean:
-	rm -vf osc-api.json call_list osc_sdk.c arguments-list.json osc_sdk.h main.c $(CLI_NAME) config.sh $(CLI_NAME)-completion.bash bin/line_check bin/funclist
+	rm -vf osc-api.json call_list osc_sdk.c osc_sdk.h main.c $(CLI_NAME) config.sh $(CLI_NAME)-completion.bash bin/line_check bin/funclist
 
 .PHONY: clean list_api_version help make_cli
 
