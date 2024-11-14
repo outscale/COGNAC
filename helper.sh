@@ -168,7 +168,7 @@ get_type_description() {
 get_type() {
     x=$2
     func=$1
-    local arg_info=$(json-search ${func}Request < osc-api.json | json-search $x)
+    local arg_info=$(json-search ${func}${FUNCTION_SUFFIX} < osc-api.json | json-search $x)
     local direct_ref=$(jq -r '.["$ref"]' 2> /dev/null <<< $arg_info)
     local have_direct_ref=$?
     if [[ $have_direct_ref == 0 && "$direct_ref" != 'null' ]]; then
