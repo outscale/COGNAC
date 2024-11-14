@@ -17,6 +17,7 @@ API_VERSION=master
 SDK_VERSION=0xC061AC
 CLI_NAME=oapi-cli
 API_SCRIPT='curl -s https://raw.githubusercontent.com/outscale/osc-api/$(API_VERSION)/outscale.yaml | yq $(YQ_ARG) > osc-api.json'
+DEBUG_MODE=0
 
 inc=1
 for arg in $@; do
