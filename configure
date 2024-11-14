@@ -28,6 +28,7 @@ for arg in $@; do
    --wget-json-search			wget json-search.Appimage
    --gnu-sed-alias			use gsed for sed
    --cli-name=Name			set cli name, default: oapi-cli
+   --debug-mode				enable debug in cognac (output on stderr)
    --api-script=script			how to generate osc-api.json
    --yq-go                              use go version of yq, that use diferents arguments
    --curl-path=PATH			path to curl source root
@@ -68,6 +69,8 @@ EOF
 	YQ_ARG="-o json"
     elif [ "--gnu-sed-alias" = $arg ]; then
 	SED_ALIAS="'alias sed=gsed'"
+    elif [ "--debug-mode" = $arg ]; then
+	DEBUG_MODE=1
     elif [ "--target-api" = $( echo "$arg" | cut -d '=' -f 1) ]; then
 	API_VERSION=$( echo $arg | cut -f 2 -d '=' )
     elif [ "--cli-name" = $( echo "$arg" | cut -d '=' -f 1) ]; then
@@ -114,6 +117,7 @@ echo JSON_C_CFLAGS=$JSON_C_CFLAGS >> config.mk
 echo JSON_C_RULE=$JSON_C_RULE >> config.mk
 echo API_VERSION=$API_VERSION >> config.mk
 echo CLI_NAME=$CLI_NAME >> config.mk
+echo DEBUG_MODE=$DEBUG_MODE >> config.mk
 echo -e "osc-api.json:: config.sh\n\t$API_SCRIPT" >> config.mk
 echo $SDK_VERSION > sdk-version
 echo "config done:"
