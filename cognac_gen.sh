@@ -11,6 +11,8 @@ shopt -s expand_aliases
 
 source ./helper.sh
 
+debug "debug mode is on"
+
 dash_this_arg()
 {
     local cur="$1"
@@ -210,8 +212,10 @@ replace_args()
 	arg_check=$(bin/line_check ____args____ ____func_code____ ____functions_proto____ ____cli_parser____ ____complex_struct_func_parser____ ____complex_struct_to_string_func____ ____call_list_dec____ ____call_list_descriptions____ ____call_list_args_descriptions____ <<< "$line")
 
 	if [ "$arg_check" == "____args____" ]; then
+	    debug "____args____"
 	    ./mk_args.${lang}.sh
 	elif [ "$arg_check" == "____call_list_descriptions____" ]; then
+	    debug "____call_list_descriptions____"
 	    DELIMES=$(cut -d '(' -f 2 <<< $line | tr -d ')')
 	    D1=$(cut -d ';' -f 1  <<< $DELIMES | tr -d "'")
 	    D2=$(cut -d ';' -f 2  <<< $DELIMES | tr -d "'")
@@ -228,6 +232,7 @@ replace_args()
 	    done
 	    echo -ne $D3
 	elif [ "$arg_check" == "____call_list_args_descriptions____" ]; then
+	    debug "____call_list_args_descriptions____"
 	    DELIMES=$(cut -d '(' -f 2 <<< $line | tr -d ')')
 	    D1=$(cut -d ';' -f 1  <<< $DELIMES | tr -d "'")
 	    D2=$(cut -d ';' -f 2  <<< $DELIMES | tr -d "'")
@@ -247,6 +252,7 @@ replace_args()
 	    done
 	    echo -ne $D3
 	elif [ "$arg_check" == "____call_list_dec____" ]; then
+	    debug "____call_list_dec____"
 	    DELIMES=$(cut -d '(' -f 2 <<< $line | tr -d ')')
 	    D1=$(cut -d ';' -f 1  <<< $DELIMES | tr -d "'")
 	    D2=$(cut -d ';' -f 2  <<< $DELIMES | tr -d "'")
@@ -349,6 +355,7 @@ EOF
 	    done
 
 	elif [ "$arg_check" == "____cli_parser____" ] ; then
+	    debug "____cli_parser____"
 	    for l in $CALL_LIST; do
 		snake_l=$(to_snakecase <<< $l)
 		arg_list=$(json-search ${l}Request < osc-api.json \
@@ -457,11 +464,13 @@ EOF
 EOF
 	    done
 	elif [ "$arg_check" == "____functions_proto____" ] ; then
+	    debug "____functions_proto____"
 	    for l in $CALL_LIST; do
 		local snake_l=$(to_snakecase <<< $l)
 		echo "int osc_${snake_l}(struct osc_env *e, struct osc_str *out, struct osc_${snake_l}_arg *args);"
 	    done
 	elif [ "$arg_check" == "____func_code____" ]; then
+	    debug "____func_code____"
 	    for x in $CALL_LIST; do
 		local snake_x=$(to_snakecase <<< $x)
 		local args=$(json-search ${x}Request < osc-api.json \
