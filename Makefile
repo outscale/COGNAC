@@ -52,6 +52,10 @@ config.sh:
 	echo "alias json-search=$(JSON_SEARCH)" > config.sh
 	echo $(SED_ALIAS) >> config.sh
 	echo "export CLI_NAME=$(CLI_NAME)" >> config.sh
+	echo -e "debug()\n{" >> config.sh
+	echo -e '\tif [[ "$$DEBUG_MODE" == "1" ]] ; then echo "$$@" >&2 ; fi\n}' >> config.sh
+	echo export DEBUG_MODE=$(DEBUG_MODE) >> config.sh
+	echo 'debug "debug mode is on"' >> config.sh
 
 call_list: osc-api.json bin/funclist
 	bin/funclist osc-api.json $(FUNCLIST_ARG) > call_list
