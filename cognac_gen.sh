@@ -222,7 +222,7 @@ replace_args()
 	    D3=$(cut -d ';' -f 3  <<< $DELIMES | tr -d "'")
 	    for x in $CALL_LIST ; do
 		echo -en $D1
-		local required=$(json-search ${x}Request < osc-api.json | json-search required 2>&1 | tr -d '[]\n"' | tr -s ' ' | sed 's/nothing found//g')
+		local required=$(json-search ${x}${FUNCTION_SUFFIX} < osc-api.json | json-search required 2>&1 | tr -d '[]\n"' | tr -s ' ' | sed 's/nothing found//g')
 		local usage_required=$( for a in $(echo $required | tr -d ','); do echo -n " --${a}=${a,,}"; done )
 		local usage="\"Usage: oapi-cli $x ${usage_required} [OPTIONS]\n\""
 		local call_desc=$(jq .paths.\""/$x"\".description < osc-api.json | sed 's/<br \/>//g' | tr -d '"' | fold -s | sed 's/^/"/;s/$/\\n"/')
@@ -238,7 +238,7 @@ replace_args()
 	    D2=$(cut -d ';' -f 2  <<< $DELIMES | tr -d "'")
 	    D3=$(cut -d ';' -f 3  <<< $DELIMES | tr -d "'")
 	    for x in $CALL_LIST ; do
-		st_info=$(json-search -s  ${x}Request < osc-api.json)
+		st_info=$(json-search -s  ${x}${FUNCTION_SUFFIX} < osc-api.json)
 		A_LST=$(json-search -K properties <<< $st_info | tr -d '",[]')
 
 		echo -en $D1
@@ -264,7 +264,17 @@ replace_args()
 	    done
 	    echo -ne $D3
 	elif [ "$arg_check" == "____complex_struct_to_string_func____" ]; then
-	    COMPLEX_STRUCT=$(jq .components < osc-api.json | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response | grep -v Request)
+	    debug "____complex_struct_to_string_func____"
+	    local CALLS=$(for  c in $(cat call_list) ; do  echo ${c}${FUNCTION_SUFFIX} ; done)
+	    COMPLEX_STRUCT=$(jq .components < osc-api.json | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response)
+	    local DIFF=$(echo ${CALLS[@]} ${COMPLEX_STRUCT[@]} | tr ' ' '\n' | sort | uniq -u)
+
+	    debug "CALL_LIST: $CALLS"
+	    debug "COMPLEX_STRUCT: $COMPLEX_STRUCT"
+	    debug "diff:" "$DIFF"
+
+	    COMPLEX_STRUCT="$DIFF"
+	    debug "COMPLEX_STRUCT NOW:" "$COMPLEX_STRUCT"
 
 	    for s in $COMPLEX_STRUCT; do
 		struct_name=$(to_snakecase <<< $s)
@@ -293,7 +303,12 @@ EOF
 		fi
 	    done
 	elif [ "$arg_check" == "____complex_struct_func_parser____" ]; then
-	    COMPLEX_STRUCT=$(jq .components < osc-api.json | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response | grep -v Request)
+	    debug "____complex_struct_func_parser____"
+	    local CALLS=$(for  c in $(cat call_list) ; do  echo ${c}${FUNCTION_SUFFIX} ; done)
+	    COMPLEX_STRUCT=$(jq .components < osc-api.json | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response)
+	    local DIFF=$(echo ${CALLS[@]} ${COMPLEX_STRUCT[@]} | tr ' ' '\n' | sort | uniq -u)
+
+	    COMPLEX_STRUCT="$DIFF"
 
 	    # prototypes
 	    for s in $COMPLEX_STRUCT; do
@@ -358,7 +373,7 @@ EOF
 	    debug "____cli_parser____"
 	    for l in $CALL_LIST; do
 		snake_l=$(to_snakecase <<< $l)
-		arg_list=$(json-search ${l}Request < osc-api.json \
+		arg_list=$(json-search ${l}${FUNCTION_SUFFIX} < osc-api.json \
 			       | json-search -K properties \
 			       | tr -d "[]\"," | sed '/^$/d')
 
@@ -473,7 +488,7 @@ EOF
 	    debug "____func_code____"
 	    for x in $CALL_LIST; do
 		local snake_x=$(to_snakecase <<< $x)
-		local args=$(json-search ${x}Request < osc-api.json \
+		local args=$(json-search ${x}${FUNCTION_SUFFIX} < osc-api.json \
 				 | json-search -K properties  | tr -d "[]\",")
 		dashed_args=""
 		for arg in $args; do
@@ -490,7 +505,7 @@ EOF
 		done < function.${lang}
 	    done
 	else
-	    sed "s/____call_list____/${CALL_LIST}/g;s/____piped_call_list____/${PIPED_CALL_LIST}/;s/____api_version____/${API_VERSION}/g;s/____sdk_version____/${SDK_VERSION}/g;s/____cli_version____/$(cat cli-version)/g;s/____cli_name____/${CLI_NAME}/" <<< "$line";
+	    sed "s/____call_list____/${CALL_LIST}/g;s/____piped_call_list____/${PIPED_CALL_LIST}/;s/____api_version____/${API_VERSION}/g;s/____sdk_version____/${SDK_VERSION}/g;s/____cli_version____/$(cat cli-version)/g;s/____cli_name____/${CLI_NAME}/" <<< "$line"
 	fi
     done < $1
 }

@@ -7,7 +7,7 @@ source "./helper.sh"
 CALL_LIST_FILE=./call_list
 CALL_LIST=$(cat $CALL_LIST_FILE)
 
-COMPLEX_STRUCT=$(jq .components < osc-api.json | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response | grep -v Request)
+COMPLEX_STRUCT=$(jq .components < osc-api.json | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response | grep -v ${FUNCTION_SUFFIX})
 
 type_to_ctype() {
     local t="$1"
@@ -124,7 +124,7 @@ done
 
 for l in $CALL_LIST ;do
     snake_l=$(to_snakecase <<< $l)
-    request=$(json-search -s  ${l}Request < osc-api.json)
+    request=$(json-search -s  ${l}${FUNCTION_SUFFIX} < osc-api.json)
     ARGS_LIST=$(json-search -KR "properties" <<< $request | tr -d '"' | sed 's/,/\n/g')
 
     echo "struct osc_${snake_l}_arg  {"
