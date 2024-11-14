@@ -51,6 +51,7 @@ $(CLI_NAME)-completion.bash: bin/line_check osc-api.json call_list config.sh oap
 config.sh:
 	echo "alias json-search=$(JSON_SEARCH)" > config.sh
 	echo $(SED_ALIAS) >> config.sh
+	echo FUNCTION_SUFFIX=$(FUNCTION_SUFFIX) >> config.sh
 	echo "export CLI_NAME=$(CLI_NAME)" >> config.sh
 	echo -e "debug()\n{" >> config.sh
 	echo -e '\tif [[ "$$DEBUG_MODE" == "1" ]] ; then echo "$$@" >&2 ; fi\n}' >> config.sh
