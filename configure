@@ -128,6 +128,9 @@ echo JSON_C_RULE=$JSON_C_RULE >> config.mk
 echo API_VERSION=$API_VERSION >> config.mk
 echo CLI_NAME=$CLI_NAME >> config.mk
 echo FUNCTION_SUFFIX=$FUNCTION_SUFFIX >> config.mk
+if [[ "$FUNCTION_SUFFIX" != "Request" && "$FUNCTION_SUFFIX" != "" ]]; then
+    FUNCLIST_ARG="--func-suffix $FUNCTION_SUFFIX $FUNCLIST_ARG"
+fi
 echo FUNCLIST_ARG=$FUNCLIST_ARG >> config.mk
 echo DEBUG_MODE=$DEBUG_MODE >> config.mk
 echo -e "osc-api.json:: config.sh\n\t$API_SCRIPT" >> config.mk
