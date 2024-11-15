@@ -5,12 +5,29 @@
 
 int main(int ac, char **av)
 {
-	bool funclist_from_path = ac > 2;
-	struct json_object *j_file = json_object_from_file(av[1]);
+	bool funclist_from_path = 0;
+	struct json_object *j_file = NULL;
 
+	char *suffix = "Request";
 	int ret = 0;
 	int func_ret = 1;
 	int first = 1;
+	int i;
+
+	for (i = 1; i < ac; ++i) {
+		if (!strcmp(av[i], "--func-suffix")) {
+			++i;
+			if (i == ac) {
+				printf("usage: %s --func-suffix SUFFIX", av[0]);
+				return 1;
+			}
+			suffix = av[i];
+		} else if (!j_file) {
+			j_file = json_object_from_file(av[1]);
+		} else {
+			funclist_from_path = 1;
+		}
+	}
 
 	if (!funclist_from_path) {
 		struct json_object *compo;
@@ -25,7 +42,7 @@ int main(int ac, char **av)
 
 		json_object_object_foreach(schema, k, v_) {
 			char *new_k = strdup(k);
-			char *resquest = strstr(new_k, "Request");
+			char *resquest = strstr(new_k, suffix);
 
 			if (resquest) {
 				if (!first)
