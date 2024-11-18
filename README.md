@@ -30,8 +30,10 @@ The language argument is crucial as certain keywords might be interpreted differ
 The script uses a file called osc-api.json, which represents the OpenAPI specification in JSON format.
 For the Outscale API, the YAML source is converted to JSON using yq.
 
-When generating API calls, COGNAC assumes that the OpenAPI file contains components named CallRequest.
+When generating API calls, COGNAC by default assumes that the OpenAPI file contains components named CallRequest.
 For example, if the API has a call named `CreatePony`, the corresponding component should be located at `#/components/schemas/CreatePonyRequest`.
+
+You can change the suffix of functions using `./configure --function-suffix FUNCTION_SUFFIX`
 
 *Note: There are two versions of yq: one written in Python and one in Go. The default version depends on your distribution. On Arch-based distributions, the Python version is typically the default, whereas on Debian-based distributions, the Go version is default. COGNAC supports both, but to use the Go version, you need to pass `--yq-go` to `./configure`.*
 
@@ -44,14 +46,21 @@ To configure the Makefile to generate the CLI with the name `pony-cli`, and adju
 
 Run the following command:
 ```bash
-./configure --cli-name=pony-cli --api-script='curl -s https://ponyapi.yolo | yq $(YQ_ARG) | sed "s/Input/Request/" > osc-api.json'
+./configure --cli-name=pony-cli --function-suffix Input --api-script='curl -s https://ponyapi.yolo | yq $(YQ_ARG)" > osc-api.json'
 ```
 
 `-cli-name=pony-cli` set the generated binary name to `pony-cli`
 
 ```bash
---api-script='curl -s https://ponyapi.yolo | yq $(YQ_ARG) | sed "s/Input/Request/" > osc-api.json'
+--function-suffix Input
 ```
+Look for Function named XInput instead of XRequest.
+
+```bash
+--api-script='curl -s https://ponyapi.yolo | yq $(YQ_ARG) > osc-api.json'
+```
+
+
 This script is used to fetch the API file.
 
 
@@ -59,7 +68,6 @@ Here’s what the script does:
 
 1. Retrieves the API in YAML format using curl -s `https://ponyapi.yolo/.`
 2. Converts the YAML to JSON using yq `$(YQ_ARG)`. *Note the usage of `$(YQ_ARG)`, so ./configure can handle go version of yq*
-3. Renames all components named `XInput` to `XRequest`.
 
 Once this setup is complete, you can now use the Makefile. It's also a good idea to run ./configure --help, as it contains several useful options.
 - `--wget-json-search`: Helps with downloading `json-search`, which can be tricky to install, **If unsure, we recommend using this by default**
