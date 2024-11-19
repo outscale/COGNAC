@@ -12,6 +12,7 @@ shopt -s expand_aliases
 source ./helper.sh
 
 debug "debug mode is on"
+debug "Get functions call from osc-api.json path: $FROM_PATH"
 
 dash_this_arg()
 {
@@ -269,9 +270,6 @@ replace_args()
 	    COMPLEX_STRUCT=$(jq .components < osc-api.json | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response)
 	    local DIFF=$(echo ${CALLS[@]} ${COMPLEX_STRUCT[@]} | tr ' ' '\n' | sort | uniq -u)
 
-	    debug "CALL_LIST: $CALLS"
-	    debug "COMPLEX_STRUCT: $COMPLEX_STRUCT"
-	    debug "diff:" "$DIFF"
 
 	    COMPLEX_STRUCT="$DIFF"
 	    debug "COMPLEX_STRUCT NOW:" "$COMPLEX_STRUCT"
@@ -312,8 +310,9 @@ EOF
 
 	    # prototypes
 	    for s in $COMPLEX_STRUCT; do
-		struct_name=$(to_snakecase <<< $s)
-		A_LST=$(jq .components.schemas.$s < osc-api.json | json-search -Kn properties | tr -d '",[]')
+		struct_name=$(bin/path_to_snakecase "$s")
+		debug "structs name: $s $struct_name"
+		A_LST=$(jq .components.schemas[\"$s\"] < osc-api.json | json-search -Kn properties | tr -d '",[]')
 		if [ "$A_LST" != "null" ]; then
 		    echo  "int ${struct_name}_parser(void *s, char *str, char *aa, struct ptr_array *pa);"
 		fi
@@ -505,7 +504,7 @@ EOF
 		done < function.${lang}
 	    done
 	else
-	    sed "s/____call_list____/${CALL_LIST}/g;s/____piped_call_list____/${PIPED_CALL_LIST}/;s/____api_version____/${API_VERSION}/g;s/____sdk_version____/${SDK_VERSION}/g;s/____cli_version____/$(cat cli-version)/g;s/____cli_name____/${CLI_NAME}/" <<< "$line"
+	    sed "s|____call_list____|${CALL_LIST}|g;s+____piped_call_list____+${PIPED_CALL_LIST}+;s/____api_version____/${API_VERSION}/g;s/____sdk_version____/${SDK_VERSION}/g;s/____cli_version____/$(cat cli-version)/g;s/____cli_name____/${CLI_NAME}/" <<< "$line"
 	fi
     done < $1
 }
