@@ -23,3 +23,22 @@ This is also much faster than multiple calls to grep.
 # osc-api-seems-valid.sh
 
 This utility is used to check if osc-api.json has been generated correctly. It verifies that the file is a valid JSON and contains at least one API function.
+
+# path_to_snakecase
+snakecasise an object name.
+example `ReadVms` become `read_vms`
+`/my/{NAME}/getId` become `my_name_get_id`
+
+usage:
+```
+./path_to_snakecase STRING
+```
+
+# get_argument_list
+
+Take an object componant in `paths` or in `components.schema`, and give a list of all it arguments.
+
+usage:
+```
+./get_argument_list file.json componant_name
+```
