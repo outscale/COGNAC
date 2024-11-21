@@ -302,17 +302,20 @@ EOF
 	    done
 	elif [ "$arg_check" == "____complex_struct_func_parser____" ]; then
 	    debug "____complex_struct_func_parser____"
-	    local CALLS=$(for  c in $(cat call_list) ; do  echo ${c}${FUNCTION_SUFFIX} ; done)
 	    COMPLEX_STRUCT=$(jq .components < osc-api.json | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response)
-	    local DIFF=$(echo ${CALLS[@]} ${COMPLEX_STRUCT[@]} | tr ' ' '\n' | sort | uniq -u)
 
-	    COMPLEX_STRUCT="$DIFF"
+	    if [[ "$FROM_PATH" != "1" ]]; then
+		local CALLS=$(for  c in $(cat call_list) ; do  echo ${c}${FUNCTION_SUFFIX} ; done)
+		local DIFF=$(echo ${CALLS[@]} ${COMPLEX_STRUCT[@]} | tr ' ' '\n' | sort | uniq -u)
+
+		COMPLEX_STRUCT="$DIFF"
+	    fi
 
 	    # prototypes
 	    for s in $COMPLEX_STRUCT; do
 		struct_name=$(bin/path_to_snakecase "$s")
-		debug "structs name: $s $struct_name"
-		A_LST=$(jq .components.schemas[\"$s\"] < osc-api.json | json-search -Kn properties | tr -d '",[]')
+		A_LST=$(bin/get_argument_list osc-api.json "$s")
+
 		if [ "$A_LST" != "null" ]; then
 		    echo  "int ${struct_name}_parser(void *s, char *str, char *aa, struct ptr_array *pa);"
 		fi
@@ -325,7 +328,7 @@ EOF
 		struct_name=$(to_snakecase <<< $s)
 
 		local componant=$(jq .components.schemas.$s < osc-api.json)
-		A_LST=$(json-search -Kn properties <<< $componant | tr -d '",[]')
+		A_LST=$(bin/get_argument_list osc-api.json "$s")
 		if [ "$A_LST" != "null" ]; then
 		    echo  "int ${struct_name}_parser(void *v_s, char *str, char *aa, struct ptr_array *pa) {"
 
@@ -372,9 +375,10 @@ EOF
 	    debug "____cli_parser____"
 	    for l in $CALL_LIST; do
 		snake_l=$(to_snakecase <<< $l)
-		arg_list=$(json-search ${l}${FUNCTION_SUFFIX} < osc-api.json \
-			       | json-search -K properties \
-			       | tr -d "[]\"," | sed '/^$/d')
+		arg_list=$(bin/get_argument_list osc-api.json ${l}${FUNCTION_SUFFIX})
+
+		debug "arg list of " ${l}${FUNCTION_SUFFIX} ":"
+		debug $arg_list
 
 		cat <<EOF
               if (!strcmp("$l", av[i])) {
