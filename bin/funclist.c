@@ -64,7 +64,7 @@ int main(int ac, char **av)
 			if (!first)
 				putchar(' ');
 			first = 0;
-			printf("%s", k+1);
+			printf("%s", k);
 		}
 	}
 
