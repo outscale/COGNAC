@@ -7,7 +7,11 @@ source "./helper.sh"
 CALL_LIST_FILE=./call_list
 CALL_LIST=$(cat $CALL_LIST_FILE)
 
+if [[ "$FROM_PATH" != "1" ]]; then
 COMPLEX_STRUCT=$(jq .components < osc-api.json | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response | grep -v ${FUNCTION_SUFFIX})
+else
+COMPLEX_STRUCT=$(jq .components < osc-api.json | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response)
+fi
 
 type_to_ctype() {
     local t="$1"
@@ -118,27 +122,35 @@ create_struct() {
 
 declare -A structs
 
+debug "____args____: create_struct loop"
 for s in $COMPLEX_STRUCT; do
     create_struct "$s"
 done
 
+debug "____args____: call list loop"
 for l in $CALL_LIST ;do
-    snake_l=$(to_snakecase <<< $l)
-    request=$(json-search -s  ${l}${FUNCTION_SUFFIX} < osc-api.json)
-    ARGS_LIST=$(json-search -KR "properties" <<< $request | tr -d '"' | sed 's/,/\n/g')
+    snake_l=$(bin/path_to_snakecase "$l")
+    required=$(bin/get_argument_list osc-api.json "${l}${FUNCTION_SUFFIX}" --require)
+    ARGS_LIST=$(bin/get_argument_list osc-api.json "${l}${FUNCTION_SUFFIX}")
 
     echo "struct osc_${snake_l}_arg  {"
-    echo -n "        /* Required:"
-    json-search required 2>&1 <<< $request | tr -d "[]\"\n" | tr -s ' ' | sed 's/nothing found/none/g' | to_snakecase
+    echo  "        /* Required: $required"
     echo " */"
 
+    debug "descriptions now"
     for x in $ARGS_LIST ;do
 	snake_name=$(to_snakecase <<< "$x")
 
 	t=$(get_type "$l" "$x")
 	#echo "get type: $func $x"
 	echo '        /*'
-	get_type_description "$request" "$x" | tr -d '"' | fold -s -w70 | sed -e  's/^/         * /g' | sed "s/null/See '$snake_name' type documentation/"
+	if [[ "$FROM_PATH" != "1" ]]; then
+	    request=$(json-search -s  ${l}${FUNCTION_SUFFIX} < osc-api.json)
+
+	    get_type_description "$request" "$x" | tr -d '"' | fold -s -w70 | sed -e  's/^/         * /g' | sed "s/null/See '$snake_name' type documentation/"
+	else
+	    echo "         * $x"
+	fi
 	echo '         */'
 	#echo "/* TYPE: $t */"
 	type_to_ctype "$t" "${snake_name}"

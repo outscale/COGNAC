@@ -89,6 +89,12 @@ get_type_direct() {
 get_type3() {
     st_info="$1"
     arg="$2"
+    local path_type=$(bin/get_path_type "$st_info" $arg)
+    if [[ "$path_type" != "null" ]]; then
+	debug "info: $path_type"
+    	echo $path_type
+    	return 0
+    fi
     arg_info=$(json-search $arg <<< $st_info)
     get_type_direct "$arg_info"
     return 0
@@ -100,6 +106,11 @@ get_type3() {
 get_type2() {
     struct="$1"
     arg="$2"
+    local path_type=$(bin/get_path_type ./osc-api.json $struct $arg)
+    if [[ "$path_type" != "$struct" ]]; then
+    	echo $path_type
+    	return 0
+    fi
     st_info=$(jq .components.schemas.$struct < osc-api.json)
 
     get_type3 "$st_info" "$arg"
@@ -168,6 +179,12 @@ get_type_description() {
 get_type() {
     x=$2
     func=$1
+    local path_type=$(bin/get_path_type ./osc-api.json $x $func)
+    if [[ "$?" == "0" ]]; then
+	echo $path_type
+	return 0
+    fi
+
     local arg_info=$(json-search ${func}${FUNCTION_SUFFIX} < osc-api.json | json-search $x)
     local direct_ref=$(jq -r '.["$ref"]' 2> /dev/null <<< $arg_info)
     local have_direct_ref=$?

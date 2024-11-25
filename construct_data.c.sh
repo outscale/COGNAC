@@ -12,7 +12,7 @@ if [[ "complex_struct" == "$2" ]]; then
     alias get_type=get_type2
 else
     base=$(json-search ${func}${FUNCTION_SUFFIX} < osc-api.json)
-    args=$(json-search -Kn properties <<< $base | tr -d "\n[],\"" | sed 's/  / /g')
+    args=$(bin/get_argument_list osc-api.json "${func}${FUNCTION_SUFFIX}")
 fi
 
 aditional=$(jq .additionalProperties <<< $base)
