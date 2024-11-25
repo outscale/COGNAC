@@ -240,7 +240,7 @@ replace_args()
 	    D3=$(cut -d ';' -f 3  <<< $DELIMES | tr -d "'")
 	    for x in $CALL_LIST ; do
 		st_info=$(json-search -s  ${x}${FUNCTION_SUFFIX} < osc-api.json)
-		A_LST=$(json-search -K properties <<< $st_info | tr -d '",[]')
+		A_LST=$(bin/get_argument_list osc-api.json ${x}${FUNCTION_SUFFIX})
 
 		echo -en $D1
 		for a in $A_LST; do
@@ -266,13 +266,14 @@ replace_args()
 	    echo -ne $D3
 	elif [ "$arg_check" == "____complex_struct_to_string_func____" ]; then
 	    debug "____complex_struct_to_string_func____"
-	    local CALLS=$(for  c in $(cat call_list) ; do  echo ${c}${FUNCTION_SUFFIX} ; done)
 	    COMPLEX_STRUCT=$(jq .components < osc-api.json | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response)
-	    local DIFF=$(echo ${CALLS[@]} ${COMPLEX_STRUCT[@]} | tr ' ' '\n' | sort | uniq -u)
 
+	    if [[ "$FROM_PATH" != "1" ]]; then
+		local CALLS=$(for  c in $(cat call_list) ; do  echo ${c}${FUNCTION_SUFFIX} ; done)
+		local DIFF=$(echo ${CALLS[@]} ${COMPLEX_STRUCT[@]} | tr ' ' '\n' | sort | uniq -u)
 
-	    COMPLEX_STRUCT="$DIFF"
-	    debug "COMPLEX_STRUCT NOW:" "$COMPLEX_STRUCT"
+		COMPLEX_STRUCT="$DIFF"
+	    fi
 
 	    for s in $COMPLEX_STRUCT; do
 		struct_name=$(to_snakecase <<< $s)
@@ -374,14 +375,12 @@ EOF
 	elif [ "$arg_check" == "____cli_parser____" ] ; then
 	    debug "____cli_parser____"
 	    for l in $CALL_LIST; do
-		snake_l=$(to_snakecase <<< $l)
+		snake_l=$(bin/path_to_snakecase "$l")
+		local caml_l=$(bin/path_to_camelcase "$l")
 		arg_list=$(bin/get_argument_list osc-api.json ${l}${FUNCTION_SUFFIX})
 
-		debug "arg list of " ${l}${FUNCTION_SUFFIX} ":"
-		debug $arg_list
-
 		cat <<EOF
-              if (!strcmp("$l", av[i])) {
+              if (!strcmp("$caml_l", av[i])) {
 		     auto_osc_json_c json_object *jobj = NULL;
 		     auto_ptr_array struct ptr_array opa = {0};
 		     struct ptr_array *pa = &opa;
@@ -484,15 +483,15 @@ EOF
 	elif [ "$arg_check" == "____functions_proto____" ] ; then
 	    debug "____functions_proto____"
 	    for l in $CALL_LIST; do
-		local snake_l=$(to_snakecase <<< $l)
+		local snake_l=$(bin/path_to_snakecase $l)
 		echo "int osc_${snake_l}(struct osc_env *e, struct osc_str *out, struct osc_${snake_l}_arg *args);"
 	    done
 	elif [ "$arg_check" == "____func_code____" ]; then
 	    debug "____func_code____"
 	    for x in $CALL_LIST; do
-		local snake_x=$(to_snakecase <<< $x)
-		local args=$(json-search ${x}${FUNCTION_SUFFIX} < osc-api.json \
-				 | json-search -K properties  | tr -d "[]\",")
+		local snake_x=$(bin/path_to_snakecase $x)
+		local caml_l=$(bin/path_to_camelcase "$x")
+		local args=$(bin/get_argument_list osc-api.json ${x}${FUNCTION_SUFFIX})
 		dashed_args=""
 		for arg in $args; do
 		    dash_this "$x" "$arg"
@@ -503,7 +502,7 @@ EOF
 		    if [[ $( grep -q ____construct_data____ <<< "$fline" )$? == 0 ]]; then
 			./construct_data.${lang}.sh $x
 		    else
-			sed "s/____func____/$x/g; s/____snake_func____/$snake_x/g;s/____dashed_args____/$dashed_args/g" <<< "$fline"
+			sed "s/____func____/$caml_l/g; s/____snake_func____/$snake_x/g;s/____dashed_args____/$dashed_args/g" <<< "$fline"
 		    fi
 		done < function.${lang}
 	    done
