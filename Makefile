@@ -25,7 +25,7 @@ help:
 
 include oapi-cli.mk
 
-BIN_DEPENDANCIES=bin/path_to_snakecase bin/line_check bin/get_argument_list bin/funclist
+BIN_DEPENDANCIES=bin/path_to_snakecase bin/path_to_camelcase bin/line_check bin/get_argument_list bin/funclist bin/get_path_type
 
 osc-api.json::
 	./bin/osc-api-seems-valid.sh osc-api.json "need_remove"
@@ -38,11 +38,17 @@ bin/funclist: bin/funclist.c
 bin/path_to_snakecase: bin/path_to_snakecase.c
 	$(CC) -O3 bin/path_to_snakecase.c $(JSON_C_LDFLAGS) $(JSON_C_CFLAGS) -o bin/path_to_snakecase
 
+bin/path_to_camelcase: bin/path_to_camelcase.c
+	$(CC) -O3 bin/path_to_camelcase.c $(JSON_C_LDFLAGS) $(JSON_C_CFLAGS) -o bin/path_to_camelcase
+
 bin/line_check: bin/line_check.c
 	$(CC) -O3 bin/line_check.c -o bin/line_check
 
 bin/get_argument_list: bin/get_argument_list.c
 	$(CC) -O3 -g bin/get_argument_list.c $(JSON_C_LDFLAGS) $(JSON_C_CFLAGS) -o bin/get_argument_list
+
+bin/get_path_type: bin/get_path_type.c
+	$(CC) -O3 -g bin/get_path_type.c $(JSON_C_LDFLAGS) $(JSON_C_CFLAGS) -o bin/get_path_type
 
 main.c: $(BIN_DEPENDANCIES) osc-api.json call_list config.sh main_tpl.c cognac_gen.sh mk_args.c.sh
 	./cognac_gen.sh main_tpl.c main.c c

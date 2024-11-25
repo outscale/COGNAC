@@ -34,6 +34,16 @@ usage:
 ./path_to_snakecase STRING
 ```
 
+# path_to_camelcase
+camelcasise an object name.
+example `ReadVms` become `read_vms`
+`/my/{NAME}/getId` become `my_name_get_id`
+
+usage:
+```
+./path_to_camelcase STRING
+```
+
 # get_argument_list
 
 Take an object componant in `paths` or in `components.schema`, and give a list of all it arguments.
@@ -42,3 +52,16 @@ usage:
 ```
 ./get_argument_list file.json componant_name
 ```
+
+# get_path_type
+
+usage:
+```
+./bin/get_path_type osc-api.json PATH ARGUMENT_NAME
+```
+
+example:
+```
+./bin/get_path_type osc-api.json /projects id
+```
+
