@@ -158,6 +158,15 @@ get_sub_type_description() {
 # usage: get_type_description "{FULL COMPONANT JSON}" "ARGUMENT"
 # ex: get_type_description "$(jq .components.schemas.ReadVmsRequest < osc-api.json)" "VmId"
 get_type_description() {
+    PATH_DESC=$(bin/get_path_description "$1" "$2")
+    local PATH_RET=$?
+
+    if [[ "$PATH_RET" == "0" ]]; then
+	echo $PATH_DESC
+	return
+    fi
+
+
     local properties=$(jq .properties.$2 <<< "$1")
     local desc=$(jq .description <<< "$properties")
     local ref=$(json-search '$ref' <<< "$properties" 2>&1 )
