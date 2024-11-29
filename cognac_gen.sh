@@ -239,15 +239,23 @@ replace_args()
 	    D2=$(cut -d ';' -f 2  <<< $DELIMES | tr -d "'")
 	    D3=$(cut -d ';' -f 3  <<< $DELIMES | tr -d "'")
 	    for x in $CALL_LIST ; do
-		st_info=$(json-search -s  ${x}${FUNCTION_SUFFIX} < osc-api.json)
+		st_info=$(json-search "${x}${FUNCTION_SUFFIX}" < osc-api.json)
 		A_LST=$(bin/get_argument_list osc-api.json ${x}${FUNCTION_SUFFIX})
 
+		#debug "st info: $st_info"
 		echo -en $D1
 		for a in $A_LST; do
 		    local t=$(get_type3 "$st_info" "$a")
-		    local snake_n=$(to_snakecase <<< $a)
+		    local snake_n=$(bin/path_to_snakecase $a)
 		    echo "\"--$a: $t\\n\""
-		    get_type_description "$st_info" "$a" | sed 's/<br \/>//g;s/\\"/\&quot;/g' | tr -d '"' | fold -s -w92 | sed 's/^/\t"  /;s/$/\\n"/;s/\&quot;/\\"/g'
+		    PATH_DESC=$(bin/get_path_description "$st_info" "$a")
+		    local PATH_RET=$?
+
+		    if [[ "$PATH_RET" == "0" ]]; then
+			echo $PATH_DESC
+		    else
+			get_type_description "$st_info" "$a" | sed 's/<br \/>//g;s/\\"/\&quot;/g' | tr -d '"' | fold -s -w92 | sed 's/^/\t"  /;s/$/\\n"/;s/\&quot;/\\"/g'
+		    fi
 		done
 		echo -en $D2
 	    done
