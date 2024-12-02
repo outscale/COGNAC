@@ -223,9 +223,10 @@ replace_args()
 	    D3=$(cut -d ';' -f 3  <<< $DELIMES | tr -d "'")
 	    for x in $CALL_LIST ; do
 		echo -en $D1
-		local required=$(json-search ${x}${FUNCTION_SUFFIX} < osc-api.json | json-search required 2>&1 | tr -d '[]\n"' | tr -s ' ' | sed 's/nothing found//g')
+		local caml_x=$(bin/path_to_camelcase "$x")
+		local required=$(bin/get_argument_list osc-api.json "${x}${FUNCTION_SUFFIX}" --require)
 		local usage_required=$( for a in $(echo $required | tr -d ','); do echo -n " --${a}=${a,,}"; done )
-		local usage="\"Usage: oapi-cli $x ${usage_required} [OPTIONS]\n\""
+		local usage="\"Usage: oapi-cli $caml_x ${usage_required} [OPTIONS]\n\""
 		local call_desc=$(jq .paths.\""/$x"\".description < osc-api.json | sed 's/<br \/>//g' | tr -d '"' | fold -s | sed 's/^/"/;s/$/\\n"/')
 
 		echo $usage $call_desc \""\nRequired Argument:" $required "\n\""
@@ -260,8 +261,9 @@ replace_args()
 	    D2=$(cut -d ';' -f 2  <<< $DELIMES | tr -d "'")
 	    D3=$(cut -d ';' -f 3  <<< $DELIMES | tr -d "'")
 	    for x in $CALL_LIST ;do
+		local caml_x=$(bin/path_to_camelcase "$x")
 		echo -en $D1
-		echo -n $x
+		echo -n $caml_x
 		echo -en $D2
 	    done
 	    echo -ne $D3
