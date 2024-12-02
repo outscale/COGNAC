@@ -137,7 +137,6 @@ for l in $CALL_LIST ;do
     echo  "        /* Required: $required"
     echo " */"
 
-    debug "descriptions now"
     for x in $ARGS_LIST ;do
 	snake_name=$(to_snakecase <<< "$x")
 

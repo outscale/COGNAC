@@ -24,7 +24,6 @@ int main(int ac, char **av)
 	if (!post_or_get)
 		goto err;
 
-	dprintf(2, "%s\n", element);
 	printf("\"\"\n");
 	func_ret = 0;
 	goto out;
