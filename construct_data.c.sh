@@ -40,9 +40,28 @@ if [[ "$args" == "null" ]]; then
 fi
 
 for x in $args ;do
+    placement=$(bin/arg_placement osc-api.json $func $x)
     snake_x=$(to_snakecase <<< $x)
     snake_x=$( if [ "default" == "$snake_x" ] ; then echo default_arg; else echo $snake_x; fi )
     t=$(get_type $func $x)
+
+    if [[ $placement == "path" ]]; then
+	debug "skip $x"
+	continue;
+    elif [[ $placement == "header" ]]; then
+	cat <<EOF
+	if (args->$snake_x) {
+		struct osc_str hdr;
+
+		osc_init_str(&hdr);
+		osc_str_append_string(&hdr, "$x: ");
+		osc_str_append_string(&hdr, args->$snake_x);
+		curl_easy_setopt(e->c, CURLOPT_HTTPHEADER, hdr.buf);
+		osc_deinit_str(&hdr);
+	}
+EOF
+	continue;
+    fi
 
     if [ "$t" == 'long long int' ]; then
 	t='int'
