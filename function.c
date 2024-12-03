@@ -4,8 +4,11 @@ static  int ____snake_func_____data(struct osc_env *e, struct osc_____snake_func
 	int ret = 0;
 	int count_args = 0;
 
+	(void)count_args; /* if use only query/header and path, this is unused */
 	if (!args)
 		return 0;
+
+	____maybe_query_init____
 	osc_init_str(&end_call);
 	osc_str_append_string(&end_call, e->endpoint.buf);
 	osc_str_append_string(data, "{");
@@ -13,6 +16,7 @@ static  int ____snake_func_____data(struct osc_env *e, struct osc_____snake_func
 	osc_str_append_string(data, "}");
 	____construct_path____
 
+	____maybe_query_set____
 	curl_easy_setopt(e->c, CURLOPT_URL, end_call.buf);
 	osc_deinit_str(&end_call);
 	return !!ret;

@@ -497,7 +497,12 @@ EOF
 		local args=$(bin/get_argument_list osc-api.json ${x}${FUNCTION_SUFFIX})
 		local have_post=$(cat osc-api.json | json-search ${x}${FUNCTION_SUFFIX} | jq .post)
 		dashed_args=""
+		local have_quey=0
 		for arg in $args; do
+		    placement=$(bin/arg_placement osc-api.json $x $arg)
+		    if [[ $placement == "query" ]]; then
+			have_quey=1
+		    fi
 		    dash_this "$x" "$arg"
 		done
 
@@ -507,6 +512,16 @@ EOF
 			./construct_data.${lang}.sh $x
 		    elif [[  $( grep -q ____construct_path____ <<< "$fline" )$? == 0 ]]; then
 			bin/construct_path $x
+		    elif [[  $( grep -q ____maybe_query_init____ <<< "$fline" )$? == 0 ]]; then
+			if [[ "$have_quey" == "1" ]]; then
+			    echo -e "\tstruct osc_str query;"
+			    echo -e "\tosc_init_str(&query);"
+			fi
+		    elif [[  $( grep -q ____maybe_query_set____ <<< "$fline" )$? == 0 ]]; then
+			if [[ "$have_quey" == "1" ]]; then
+			    echo -e "\tosc_str_append_string(&end_call, query.buf);"
+			    echo -e "\tosc_deinit_str(&query);"
+			fi
 		    elif [[  $( grep -q ____curl_set_methode____ <<< "$fline" )$? == 0 ]]; then
 			if [[ "$FROM_PATH" == "1" && "$have_post" == "null" ]]; then
 			    echo '       /* get doesn t need curl_easy_setopt */'
