@@ -56,8 +56,20 @@ for x in $args ;do
 		osc_init_str(&hdr);
 		osc_str_append_string(&hdr, "$x: ");
 		osc_str_append_string(&hdr, args->$snake_x);
-		curl_easy_setopt(e->c, CURLOPT_HTTPHEADER, hdr.buf);
+		e->headers = curl_slist_append(e->headers, hdr.buf);
+		curl_easy_setopt(e->c, CURLOPT_HTTPHEADER, e->headers);
 		osc_deinit_str(&hdr);
+	}
+EOF
+	continue;
+    elif [[ $placement == "query" ]]; then
+	cat <<EOF
+	if (args->$snake_x) {
+		if (!query.len)
+			osc_str_append_string(&query, "?$x=");
+		else
+			osc_str_append_string(&query, "&$x=");
+		osc_str_append_string(&query, args->$snake_x);
 	}
 EOF
 	continue;
