@@ -493,8 +493,9 @@ EOF
 	    debug "____func_code____"
 	    for x in $CALL_LIST; do
 		local snake_x=$(bin/path_to_snakecase $x)
-		local caml_l=$(bin/path_to_camelcase "$x")
+		#local caml_l=$(bin/path_to_camelcase "$x")
 		local args=$(bin/get_argument_list osc-api.json ${x}${FUNCTION_SUFFIX})
+		local have_post=$(cat osc-api.json | json-search ${x}${FUNCTION_SUFFIX} | jq .post)
 		dashed_args=""
 		for arg in $args; do
 		    dash_this "$x" "$arg"
@@ -504,8 +505,16 @@ EOF
 		do
 		    if [[ $( grep -q ____construct_data____ <<< "$fline" )$? == 0 ]]; then
 			./construct_data.${lang}.sh $x
+		    elif [[  $( grep -q ____construct_path____ <<< "$fline" )$? == 0 ]]; then
+			bin/construct_path $x
+		    elif [[  $( grep -q ____curl_set_methode____ <<< "$fline" )$? == 0 ]]; then
+			if [[ "$FROM_PATH" == "1" && "$have_post" == "null" ]]; then
+			    echo '       /* get doesn t need curl_easy_setopt */'
+			else
+			    echo '        curl_easy_setopt(e->c, CURLOPT_POSTFIELDS, r ? data.buf : "");'
+			fi
 		    else
-			sed "s/____func____/$caml_l/g; s/____snake_func____/$snake_x/g;s/____dashed_args____/$dashed_args/g" <<< "$fline"
+			sed "s/____snake_func____/$snake_x/g;s/____dashed_args____/$dashed_args/g" <<< "$fline"
 		    fi
 		done < function.${lang}
 	    done
