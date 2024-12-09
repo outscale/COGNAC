@@ -91,12 +91,18 @@ get_type3() {
     arg="$2"
     local path_type=$(bin/get_path_type "$st_info" $arg)
     if [[ "$path_type" != "null" ]]; then
-	debug "info: $path_type"
-    	echo $path_type
-    	return 0
+	if [[ "$path_type" != "string" ]]; then
+	    debug "get_type3 of $2: '$path_type'"
+	    st_info=$(jq .components.schemas.$path_type < osc-api.json)
+	else
+	    debug "info: $path_type"
+    	    echo $path_type
+    	    return 0
+	fi
     fi
-    arg_info=$(json-search $arg <<< $st_info)
+    arg_info=$(jq .properties[\"$arg\"] <<< $st_info)
     get_type_direct "$arg_info"
+    debug "type 3 ($arg): " $(get_type_direct "$arg_info")
     return 0
 }
 
@@ -108,8 +114,13 @@ get_type2() {
     arg="$2"
     local path_type=$(bin/get_path_type ./osc-api.json $struct $arg)
     if [[ "$path_type" != "$struct" ]]; then
-    	echo $path_type
-    	return 0
+	if [[ "$path_type" != 'string' && 'path_type' != 'null' ]]; then
+	    debug "get_type2: $path_type"
+	    struct=$path_type
+	else
+    	    echo $path_type
+    	    return 0
+	fi
     fi
     st_info=$(jq .components.schemas.$struct < osc-api.json)
 
@@ -188,10 +199,15 @@ get_type_description() {
 get_type() {
     x=$2
     func=$1
-    local path_type=$(bin/get_path_type ./osc-api.json $x $func)
-    if [[ "$?" == "0" ]]; then
-	echo $path_type
-	return 0
+    local path_type=$(bin/get_path_type ./osc-api.json $func $x)
+    if [[ "$path_type" != "$func" ]]; then
+	if [[ "$path_type" != 'string' && 'path_type' != 'null' ]]; then
+	    debug "get_type: $path_type $func $x"
+	    func=$path_type
+	else
+    	    echo $path_type
+    	    return 0
+	fi
     fi
 
     local arg_info=$(json-search ${func}${FUNCTION_SUFFIX} < osc-api.json | json-search $x)
