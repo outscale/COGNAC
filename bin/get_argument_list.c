@@ -48,11 +48,18 @@ int main(int ac, char **av)
 			OBJ_GET(param, "name", &name);
 			printf(" %s" + !i, json_object_get_string(name));
 		}
+		componant_name = componant_name_from_get_or_post(post_or_get);
+		if (!componant_name)
+			goto out;
+		putchar(' ');
+		goto in_schema;
 	} else {
 		struct json_object *compo;
 		struct json_object *schema;
 		struct json_object *func;
 		struct json_object *properties;
+
+	in_schema:
 		int i = 0;
 
 		OBJ_GET(j_file, "components", &compo);
@@ -73,6 +80,7 @@ int main(int ac, char **av)
 			}
 		}
 	}
+out:
 	putchar('\n');
 	func_ret = 0;
 err:
