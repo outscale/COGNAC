@@ -55,7 +55,6 @@ dash_this()
     else
 	dashed_args="$dashed_args --$arg"
     fi
-
 }
 
 cli_c_type_parser()
@@ -495,6 +494,7 @@ EOF
 		local snake_x=$(bin/path_to_snakecase $x)
 		#local caml_l=$(bin/path_to_camelcase "$x")
 		local args=$(bin/get_argument_list osc-api.json ${x}${FUNCTION_SUFFIX})
+		debug "wil unknow ?"
 		local have_post=$(cat osc-api.json | json-search ${x}${FUNCTION_SUFFIX} | jq .post)
 		dashed_args=""
 		local have_quey=0
@@ -506,6 +506,7 @@ EOF
 		    dash_this "$x" "$arg"
 		done
 
+		debug "--- here 11 ----"
 		while IFS= read -r fline
 		do
 		    if [[ $( grep -q ____construct_data____ <<< "$fline" )$? == 0 ]]; then

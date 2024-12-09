@@ -6,6 +6,8 @@ func=$1
 
 source ./helper.sh
 
+debug "========= $func ========"
+
 if [[ "complex_struct" == "$2" ]]; then
     base=$(jq .components.schemas.$func < osc-api.json)
     args=$(json-search -Kn properties  <<< $base | tr -d '",[]')
