@@ -28,7 +28,7 @@ It takes three arguments: a source file, a destination file, and a language.
 The language argument is crucial as certain keywords might be interpreted differently depending on the target language.
 
 The script uses a file called osc-api.json, which represents the OpenAPI specification in JSON format.
-For the Outscale API, the YAML source is converted to JSON using yq.
+For the Outscale API, the YAML source is converted to JSON using `yq`: (https://kislyuk.github.io/yq/ or https://github.com/mikefarah/yq)
 
 When generating API calls, COGNAC by default assumes that the OpenAPI file contains components named CallRequest.
 For example, if the API has a call named `CreatePony`, the corresponding component should be located at `#/components/schemas/CreatePonyRequest`.
