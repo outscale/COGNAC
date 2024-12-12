@@ -9,7 +9,7 @@ appimagetool-x86_64.AppImage:
 $(CLI_NAME)-x86_64.AppImage: $(CLI_NAME) $(CLI_NAME)-completion.bash appimagetool-x86_64.AppImage
 	mkdir -p $(CLI_NAME).AppDir/
 	mkdir -p $(CLI_NAME).AppDir/usr/
-	install -D $$(curl-config --ca | tr -d '"') $(CLI_NAME).AppDir/$$(curl-config --ca)
+	install -D $$(curl-config --ca | tr -d '"') $(CLI_NAME).AppDir$$(curl-config --ca | tr -d '"')
 	echo export CURL_CA_BUNDLE='$${APPDIR}'/$$(curl-config --ca | tr -d '"') > $(CLI_NAME).AppDir/import-ssl.sh
 	mkdir -p $(CLI_NAME).AppDir/usr/bin/
 	mkdir -p $(CLI_NAME).AppDir/usr/lib/
