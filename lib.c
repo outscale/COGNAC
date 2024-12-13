@@ -591,9 +591,7 @@ int osc_init_sdk_ext(struct osc_env *e, const char *profile, unsigned int flag,
 		e->region = "eu-west-2";
 
 	if (!endpoint && !e->endpoint_allocated_) {
-		osc_str_append_string(&e->endpoint, "https://api.");
-		osc_str_append_string(&e->endpoint, e->region);
-		osc_str_append_string(&e->endpoint, ".outscale.com");
+____make_default_endpoint____
 	} else {
 		if (e->endpoint_allocated_) {
 			osc_str_append_string(&e->endpoint,

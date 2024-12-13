@@ -102,7 +102,6 @@ get_type3() {
     fi
     arg_info=$(jq .properties[\"$arg\"] <<< $st_info)
     get_type_direct "$arg_info"
-    debug "type 3 ($arg): " $(get_type_direct "$arg_info")
     return 0
 }
 
@@ -115,7 +114,6 @@ get_type2() {
     local path_type=$(bin/get_path_type ./osc-api.json $struct $arg)
     if [[ "$path_type" != "$struct" ]]; then
 	if [[ "$path_type" != 'string' && 'path_type' != 'null' ]]; then
-	    debug "get_type2: $path_type"
 	    struct=$path_type
 	else
     	    echo $path_type
@@ -202,7 +200,6 @@ get_type() {
     local path_type=$(bin/get_path_type ./osc-api.json $func $x)
     if [[ "$path_type" != "$func" ]]; then
 	if [[ "$path_type" != 'string' && 'path_type' != 'null' ]]; then
-	    debug "get_type: $path_type $func $x"
 	    func=$path_type
 	else
     	    echo $path_type
