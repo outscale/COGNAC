@@ -279,6 +279,45 @@ static char *osc_strdup(const char *str) {
 	} while (0)
 
 
+int osc_set_extra_flag_from_conf(const char *profile, unsigned int *flag)
+{
+	char buf[1024];
+	const char *cfg = cfg_path;
+	auto_osc_json_c struct json_object *to_free = NULL;
+	struct json_object *json_tmp, *js = NULL;
+
+	if (!cfg) {
+		LOAD_CFG_GET_HOME(buf);
+		cfg = buf;
+	}
+	TRY(access(cfg, R_OK), "can't open/read %s\n", cfg);
+	js = json_object_from_file(cfg);
+	TRY(!js, "can't load json-file %s (json might have incorect syntaxe)\n", cfg);
+	to_free = js;
+	js = json_object_object_get(js, profile);
+	TRY(!js, "can't find profile %s\n", profile);
+
+	json_tmp = json_object_object_get(js, "ssl_verify");
+	if (json_tmp) {
+		if (!json_object_get_boolean(json_tmp) ||
+		    !json_object_get_int(json_tmp)) {
+			*flag = *flag | OSC_INSECURE_MODE;
+		} else {
+			*flag = *flag & (~OSC_INSECURE_MODE);
+		}
+	}
+	json_tmp = json_object_object_get(js, "verbose");
+	if (json_tmp) {
+		if (json_object_get_boolean(json_tmp) ||
+		    json_object_get_int(json_tmp)) {
+			*flag = *flag | OSC_VERBOSE_MODE;
+		} else {
+			*flag = *flag & (~OSC_VERBOSE_MODE);
+		}
+	}
+	return 0;
+}
+
 int osc_load_ak_sk_from_conf(const char *profile, char **ak, char **sk)
 {
 	char buf[1024];
@@ -585,6 +624,7 @@ int osc_init_sdk_ext(struct osc_env *e, const char *profile, unsigned int flag,
 		if (f < 0)
 			return -1;
 		e->flag |= f;
+		osc_set_extra_flag_from_conf(profile, &flag);
 	}
 
 	if (!e->region)
