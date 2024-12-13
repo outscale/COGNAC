@@ -49,7 +49,7 @@
 
 #define OAPI_CLI_VERSION "____cli_version____"
 
-#define OAPI_CLI_UAGENT "____cli_name____/"OAPI_CLI_VERSION"; osc-sdk-c/"
+#define OAPI_CLI_UAGENT "____cli_name____/"OAPI_CLI_VERSION"; ____sdk_user_agent____-c/"
 
 #define STRY(f, args...)					\
 	do {							\
@@ -296,7 +296,7 @@ int main(int ac, char **av)
 		  flag |= OSC_INSECURE_MODE;
 		} else if (!strcmp("--version", av[i])) {
 			printf("%s version: %s\n"
-			       "osc-sdk-c version: %s\n"
+			       "____sdk_user_agent____-c version: %s\n"
 			       "based on osc-api: %s\n",
 			       program_name,
 			       OAPI_CLI_VERSION,

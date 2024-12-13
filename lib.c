@@ -506,14 +506,14 @@ int osc_init_sdk_ext(struct osc_env *e, const char *profile, unsigned int flag,
 	*e = (struct osc_env){0};
 	char *ca = getenv("CURL_CA_BUNDLE");
 	char *endpoint;
-	char user_agent[sizeof "osc-sdk-c/" + OSC_SDK_VERSON_L];
+	char user_agent[sizeof "____sdk_user_agent____-c/" + OSC_SDK_VERSON_L];
 	char *cert = getenv("OSC_X509_CLIENT_CERT");
 	char *sslkey = getenv("OSC_X509_CLIENT_KEY");
 	char *auth = getenv("OSC_AUTH_METHOD");
 	char *force_log = cfg_login(cfg);
 	char *force_pass = cfg_pass(cfg);
 
-	strcpy(stpcpy(user_agent, "osc-sdk-c/"), osc_sdk_version_str());
+	strcpy(stpcpy(user_agent, "____sdk_user_agent____-c/"), osc_sdk_version_str());
 	e->region = getenv("OSC_REGION");
 	e->flag = flag;
 	e->auth_method = cfg ? cfg->auth_method : OSC_AKSK_METHOD;
