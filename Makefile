@@ -25,7 +25,7 @@ help:
 
 include oapi-cli.mk
 
-BIN_DEPENDANCIES=bin/path_to_snakecase bin/path_to_camelcase bin/line_check bin/get_argument_list bin/funclist bin/get_path_type bin/get_path_description bin/arg_placement bin/construct_path
+BIN_DEPENDANCIES=bin/path_to_snakecase bin/path_to_camelcase bin/line_check bin/get_argument_list bin/funclist bin/get_path_type bin/get_path_description bin/arg_placement bin/construct_path bin/construct_endpoint
 
 osc-api.json::
 	./bin/osc-api-seems-valid.sh osc-api.json "need_remove"
@@ -37,6 +37,9 @@ bin/funclist: bin/funclist.c
 
 bin/construct_path: bin/construct_path.c
 	$(CC) -O3 bin/construct_path.c $(JSON_C_LDFLAGS) $(JSON_C_CFLAGS) -o bin/construct_path
+
+bin/construct_endpoint: bin/construct_endpoint.c
+	$(CC) -O3 bin/construct_endpoint.c $(JSON_C_LDFLAGS) $(JSON_C_CFLAGS) -o bin/construct_endpoint
 
 bin/path_to_snakecase: bin/path_to_snakecase.c
 	$(CC) -O3 bin/path_to_snakecase.c $(JSON_C_LDFLAGS) $(JSON_C_CFLAGS) -o bin/path_to_snakecase

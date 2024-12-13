@@ -14,6 +14,26 @@ source ./helper.sh
 debug "debug mode is on"
 debug "Get functions call from osc-api.json path: $FROM_PATH"
 
+default_endpoint=$(cat osc-api-api.json | jq -r .servers[0].url)
+if [[ "$default_endpoint" == "null" ]]; then
+   default_endpoint='https://api.{region}.outscale.com/api/v1'
+fi
+#default_endpoint='https://api.{region}.outscale.com'
+
+debug $default_endpoint
+
+path_begin=$(bin/get_path_begin.sh "$default_endpoint")
+path_begin_l=${#path_begin}
+if [[ $path_begin_l != 0 ]]; then
+    path_begin="/$path_begin"
+    path_begin_l=$(($path_begin_l + 1))
+    default_endpoint=${default_endpoint:0:-$path_begin_l}
+fi
+
+debug $path_begin
+debug $default_endpoint
+
+
 dash_this_arg()
 {
     local cur="$1"
@@ -209,7 +229,7 @@ replace_args()
     SDK_VERSION=$(cat sdk-version)
     while IFS= read -r line
     do
-	arg_check=$(bin/line_check ____args____ ____func_code____ ____functions_proto____ ____cli_parser____ ____complex_struct_func_parser____ ____complex_struct_to_string_func____ ____call_list_dec____ ____call_list_descriptions____ ____call_list_args_descriptions____ <<< "$line")
+	arg_check=$(bin/line_check ____args____ ____func_code____ ____functions_proto____ ____cli_parser____ ____complex_struct_func_parser____ ____complex_struct_to_string_func____ ____call_list_dec____ ____call_list_descriptions____ ____call_list_args_descriptions____ ____make_default_endpoint____ <<< "$line")
 
 	if [ "$arg_check" == "____args____" ]; then
 	    debug "____args____"
@@ -232,6 +252,10 @@ replace_args()
 		echo -en $D2
 	    done
 	    echo -ne $D3
+	elif [ "$arg_check" == "____make_default_endpoint____" ]; then
+	    debug "____make_default_endpoint____"
+	    debug "$default_endpoint"
+	    bin/construct_endpoint "$default_endpoint"
 	elif [ "$arg_check" == "____call_list_args_descriptions____" ]; then
 	    debug "____call_list_args_descriptions____"
 	    DELIMES=$(cut -d '(' -f 2 <<< $line | tr -d ')')
@@ -494,7 +518,6 @@ EOF
 		local snake_x=$(bin/path_to_snakecase $x)
 		#local caml_l=$(bin/path_to_camelcase "$x")
 		local args=$(bin/get_argument_list osc-api.json ${x}${FUNCTION_SUFFIX})
-		debug "wil unknow ?"
 		local have_post=$(cat osc-api.json | json-search ${x}${FUNCTION_SUFFIX} | jq .post)
 		dashed_args=""
 		local have_quey=0
@@ -506,13 +529,12 @@ EOF
 		    dash_this "$x" "$arg"
 		done
 
-		debug "--- here 11 ----"
 		while IFS= read -r fline
 		do
 		    if [[ $( grep -q ____construct_data____ <<< "$fline" )$? == 0 ]]; then
 			./construct_data.${lang}.sh $x
 		    elif [[  $( grep -q ____construct_path____ <<< "$fline" )$? == 0 ]]; then
-			bin/construct_path $x
+			bin/construct_path $x "$path_begin"
 		    elif [[  $( grep -q ____maybe_query_init____ <<< "$fline" )$? == 0 ]]; then
 			if [[ "$have_quey" == "1" ]]; then
 			    echo -e "\tstruct osc_str query;"
