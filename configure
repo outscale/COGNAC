@@ -18,6 +18,7 @@ SDK_VERSION=0xC061AC
 CLI_NAME=oapi-cli
 FUNCTION_SUFFIX=Request
 FROM_PATH=0
+SDK_USER_AGENT='osc-sdk'
 FUNCLIST_ARG=''
 API_SCRIPT='curl -s https://raw.githubusercontent.com/outscale/osc-api/$(API_VERSION)/outscale.yaml | yq $(YQ_ARG) > osc-api.json'
 DEBUG_MODE=0
@@ -32,11 +33,11 @@ for arg in $@; do
    --wget-json-search			wget json-search.Appimage
    --gnu-sed-alias			use gsed for sed
    --cli-name=Name			set cli name, default: oapi-cli
+   --sdk-user-agent=user-agent		set sdk UserAgent, default: osc-sdk
    --debug-mode				enable debug in cognac (output on stderr)
    --function-suffix=suffix		suffix use to find function in componants, default: Request
    --funclist-arg=arg			arguments to pass to funclist
    --from-path				use paths instead of componant suffix for functions generations
-   --cli-name=Name			set cli name, default: oapi-cli
    --api-script=script			how to generate osc-api.json
    --yq-go                              use go version of yq, that use diferents arguments
    --curl-path=PATH			path to curl source root
@@ -91,6 +92,8 @@ EOF
 	CLI_NAME=$( echo $arg | cut -f 2 -d '=' )
     elif [ "--api-script" = $( echo "$arg" | cut -d '=' -f 1) ]; then
 	API_SCRIPT="$( echo ${!inc} | cut -f 2 -d '=' )"
+    elif [ "--sdk-user-agent" = $( echo "$arg" | cut -d '=' -f 1) ]; then
+	SDK_USER_AGENT="$( echo ${!inc} | cut -f 2 -d '=' )"
     elif [ "--sdk-version" = $( echo "$arg" | cut -d '=' -f 1) ]; then
 	SDK_VERSION=$( echo $arg | cut -f 2 -d '=' )
     elif [ "--curl-path" = $( echo "$arg" | cut -d '=' -f 1) ]; then
@@ -142,6 +145,7 @@ if [[ "$FUNCTION_SUFFIX" != "Request" && "$FUNCTION_SUFFIX" != "" ]]; then
     FUNCLIST_ARG="--func-suffix $FUNCTION_SUFFIX $FUNCLIST_ARG"
 fi
 
+echo SDK_USER_AGENT=$SDK_USER_AGENT >> config.mk
 echo FUNCLIST_ARG=$FUNCLIST_ARG >> config.mk
 echo DEBUG_MODE=$DEBUG_MODE >> config.mk
 echo FROM_PATH=$FROM_PATH >> config.mk
