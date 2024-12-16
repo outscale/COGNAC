@@ -557,7 +557,7 @@ EOF
 		done < function.${lang}
 	    done
 	else
-	    sed "s|____call_list____|${CALL_LIST}|g;s+____piped_call_list____+${PIPED_CALL_LIST}+;s/____api_version____/${API_VERSION}/g;s/____sdk_version____/${SDK_VERSION}/g;s/____cli_version____/$(cat cli-version)/g;s/____cli_name____/${CLI_NAME}/;s/____sdk_user_agent____/$SDK_USER_AGENT/g" <<< "$line"
+	    sed "s|____call_list____|${CALL_LIST}|g;s+____piped_call_list____+${PIPED_CALL_LIST}+;s/____api_version____/${API_VERSION}/g;s/____sdk_version____/${SDK_VERSION}/g;s/____cli_version____/$(cat cli-version)/g;s/____cli_name____/${CLI_NAME}/;s/____sdk_name____/$SDK_NAME/g" <<< "$line"
 	fi
     done < $1
 }
