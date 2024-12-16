@@ -2,6 +2,13 @@
 
 *Essential Information for Hacking COGNAC*
 
+## Enabling debug
+
+To enable debug, use `--debug-mode` in `./configure`
+
+then the `debug` commande in the shell script will print some information.
+without this option debug will print nothing
+
 ## Unix Philosophy and COGNAC Paradigms.
 
 Most people have heard the phrase "Do One Thing and Do It Well" and associate it with the Unix philosophy. It’s said that this is how Unix operates and how it should be.
@@ -34,6 +41,28 @@ Some rules support multiple languages, like `____func_code____`, which generates
 A relatively easy way to add a feature in Cognac is to start by modifying the generated code (such as "osc-sdk.c", "main.c", etc.). First, make your changes directly in the generated code, ensure it works as expected, and then modify the generator accordingly. This approach helps you know exactly what to look for in the generator.
 
 For exemple, if you modify a function like `parse_thatarg()` in "osc_sdk.c", once the changes are working, you can then search (using a tool like grep) through the generator code to find where `parse_thatarg` is generated. From there, you can add modifications to the generator to make the change permanent and automated.
+
+## Example to add a new API, that doesn't work at first.
+
+Let's say you ahve configure cognac like this
+
+```sh
+ ./configure --sdk-name=myapi-sdk   --cli-name=guru --api-script='cat myapi-api.json  > osc-api.json' --debug-mode --from-path
+```
+
+doing that you will use try to generate the api from path, with debug enable.
+
+now let's say you have this output while calling `make`:
+```
+____complex_struct_func_parser____
+nothing found____cli_parser____
+nothing founderror in <stdin> jsonnothing founderror in <stdin> jsonnothing founderror in <stdin> jsonnothing founderror in <stdin> jsonnothing founderror in <stdin> jsonnothing founderror in <stdin> jsonnothing founderror in <stdin> json./cognac_gen.sh lib.h osc_sdk.h c
+debug mode is on
+```
+
+This mean that durring `____complex_struct_func_parser____` `____cli_parser____`, the scripts fails to pasre some part of osc-api json.
+To debug it, you should look at what happen durring `____complex_struct_func_parser____` and `____cli_parser____` inside `cognac_gen.sh`
+
 
 ## helpers.sh
 

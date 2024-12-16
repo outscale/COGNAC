@@ -35,6 +35,8 @@ For example, if the API has a call named `CreatePony`, the corresponding compone
 
 You can change the suffix of functions using `./configure --function-suffix FUNCTION_SUFFIX`
 
+Or you can generate functions using what is inside `paths`, using `./configure --from-path`
+
 *Note: There are two versions of yq: one written in Python and one in Go. The default version depends on your distribution. On Arch-based distributions, the Python version is typically the default, whereas on Debian-based distributions, the Go version is default. COGNAC supports both, but to use the Go version, you need to pass `--yq-go` to `./configure`.*
 
 ### Example: Generating a CLI for a New API
