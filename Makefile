@@ -79,7 +79,7 @@ config.sh: configure config.mk
 	echo $(SED_ALIAS) >> config.sh
 	echo FUNCTION_SUFFIX=$(FUNCTION_SUFFIX) >> config.sh
 	echo "export CLI_NAME=$(CLI_NAME)" >> config.sh
-	echo "export SDK_USER_AGENT=$(SDK_USER_AGENT)" >> config.sh
+	echo "export SDK_NAME=$(SDK_NAME)" >> config.sh
 	echo "export FROM_PATH=$(FROM_PATH)" >> config.sh
 	echo -e "debug()\n{" >> config.sh
 	echo -e '\tif [[ "$$DEBUG_MODE" == "1" ]] ; then echo "$$@" >&2 ; fi\n}' >> config.sh
