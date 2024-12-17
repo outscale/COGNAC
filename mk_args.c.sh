@@ -43,7 +43,7 @@ type_to_ctype() {
         int is_set_${snake_name};
 EOF
 	t=$( cut -f 2 -d ' ' <<< $t )
-	c_type="struct $(to_snakecase <<< $t) "
+	c_type="struct $(bin/path_to_snakecase  $t) "
     elif [ "array" == $( cut -d ' ' -f 1 <<< $t) ]; then
 	if [ "ref" == $( cut -d ' ' -f 2 <<< $t) ]; then
 	    t=$( cut -f 3 -d ' ' <<< $t )
@@ -51,7 +51,7 @@ EOF
         char *${snake_name}_str;
         int nb_${snake_name};
 EOF
-	    c_type="struct $(to_snakecase <<< $t) *"
+	    c_type="struct $(bin/path_to_snakecase  $t) *"
 	fi
     fi
     echo "	${c_type}${snake_name};"
@@ -64,15 +64,15 @@ write_struct() {
 
     if [ "$st_info" == "" ]; then
 	st_info=$(jq .components.schemas.$s0 < osc-api.json)
-	A_LST=$(json-search -K properties <<< $st_info | tr -d '",[]')
+	A_LST=$(./bin/get_argument_list  osc-api.json "$s")
     fi
 
-    st_s_name=$(to_snakecase <<< $s0)
+    st_s_name=$(bin/path_to_snakecase  $s0)
 
     echo  "struct $st_s_name {"
     for a in $A_LST; do
 	local t=$(get_type3 "$st_info" "$a")
-	local snake_n=$(to_snakecase <<< $a)
+	local snake_n=$(bin/path_to_snakecase  $a)
 	echo '        /*'
 	get_type_description "$st_info" "$a" | tr -d '"' | fold -s -w70 | sed -e  's/^/         * /g'
 	echo '         */'
@@ -93,7 +93,7 @@ create_struct() {
     #for s in "skip"; do
     local s="$1"
     local st0_info=$(jq .components.schemas.$s < osc-api.json)
-    local A0_LST=$(json-search -Kn properties <<< $st0_info | tr -d '",[]')
+    local A0_LST=$(./bin/get_argument_list  osc-api.json "$s")
 
     if [ "${structs[$s]}" != "" ]; then
 	return
@@ -138,7 +138,7 @@ for l in $CALL_LIST ;do
     echo " */"
 
     for x in $ARGS_LIST ;do
-	snake_name=$(to_snakecase <<< "$x")
+	snake_name=$(bin/path_to_snakecase  "$x")
 
 	t=$(get_type "$l" "$x")
 	#echo "get type: $func $x"

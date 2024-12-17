@@ -10,7 +10,7 @@ debug "========= $func ========"
 
 if [[ "complex_struct" == "$2" ]]; then
     base=$(jq .components.schemas.$func < osc-api.json)
-    args=$(json-search -Kn properties  <<< $base | tr -d '",[]')
+    args=$(bin/get_argument_list osc-api.json $func)
     alias get_type=get_type2
 else
     base=$(json-search ${func}${FUNCTION_SUFFIX} < osc-api.json)
@@ -43,7 +43,7 @@ fi
 
 for x in $args ;do
     placement=$(bin/arg_placement osc-api.json $func $x)
-    snake_x=$(to_snakecase <<< $x)
+    snake_x=$(bin/path_to_snakecase  $x)
     snake_x=$( if [ "default" == "$snake_x" ] ; then echo default_arg; else echo $snake_x; fi )
     t=$(get_type $func $x)
 

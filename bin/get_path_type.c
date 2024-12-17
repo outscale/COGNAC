@@ -40,6 +40,7 @@ int main(int ac, char **av)
 		struct json_object *param = json_object_array_get_idx(parameters, i);
 		struct json_object *name_obj;
 
+		param = try_get_ref(j_file, param);
 		OBJ_GET(param, "name", &name_obj);
 		const char *name = json_object_get_string(name_obj);
 		struct json_object *type;
