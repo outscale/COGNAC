@@ -24,7 +24,7 @@ int main(int ac, char **av)
 		if (c == '{' || c == '}') {
 			continue;
 		}
-		if (c == '/') {
+		if (c == '/' || c == '.') {
 			PUT_UNDERSCORE();
 		} else if (isupper(c)) {
 			if (!first) {

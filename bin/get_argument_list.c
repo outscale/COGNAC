@@ -38,6 +38,12 @@ int main(int ac, char **av)
 			struct json_object *name;
 			struct json_object *param = json_object_array_get_idx(parameters, i);
 
+			param = try_get_ref(j_file, param);
+			if (!param) {
+				puts(UNFOUND);
+				goto err;
+			}
+
 			if (only_require) {
 				struct json_object *required;
 				json_object_object_get_ex(param, "required", &required);

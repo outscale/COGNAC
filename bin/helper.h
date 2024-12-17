@@ -16,7 +16,7 @@
 	} while (0)							\
 
 
-char *componant_name_from_get_or_post(struct json_object *post_or_get)
+static char *componant_name_from_get_or_post(struct json_object *post_or_get)
 {
 	char *componant_name;
 	struct json_object *request_body;
@@ -46,7 +46,7 @@ err:
 	return NULL;
 }
 
-struct json_object *oneof_or_anyof(struct json_object *param)
+static struct json_object *oneof_or_anyof(struct json_object *param)
 {
 	struct json_object *anyof_or_oneof;
 	int ret;
@@ -64,7 +64,7 @@ err:
 }
 
 
-struct json_object *get_or_post_from_path(struct json_object *path)
+static struct json_object *get_or_post_from_path(struct json_object *path)
 {
 	struct json_object *post_or_get;
 	int ret;
@@ -81,7 +81,7 @@ err:
 	return NULL;
 }
 
-struct json_object *get_path_from_file(struct json_object *j_file, char *path)
+static struct json_object *get_path_from_file(struct json_object *j_file, char *path)
 {
 	struct json_object *paths;
 	struct json_object *func;
@@ -93,6 +93,47 @@ struct json_object *get_path_from_file(struct json_object *j_file, char *path)
 	return func;
 err:
 	return NULL;
+}
+
+static struct json_object *try_get_ref(struct json_object *in, struct json_object *param)
+{
+	int ret;
+	struct json_object *ref = NULL;
+	struct json_object *json_ret = NULL;
+
+	ret = json_object_object_get_ex(param, "$ref", &ref);
+	if (!ret)
+		return param;
+	const char *ref_str = json_object_get_string(ref);
+
+	ref_str = strchr(ref_str, '/');
+	if (!ref_str || !*ref_str) {
+		return NULL;
+	}
+	param = in;
+	++ref_str;
+	char *cpy = strdup(ref_str);
+	ref_str = cpy;
+
+	char *ref_str_2;
+
+again:
+
+	ref_str_2 = strchr(ref_str, '/');
+	if (ref_str_2) {
+		*ref_str_2 = 0;
+	}
+	ret = json_object_object_get_ex(param, ref_str, &param);
+	if (!ret)
+		goto err;
+	if (ref_str_2) {
+		ref_str = ref_str_2 + 1;
+		goto again;
+	}
+	json_ret = param;
+err:
+	free(cpy);
+	return json_ret;
 }
 
 #endif

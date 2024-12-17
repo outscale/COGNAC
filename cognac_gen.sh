@@ -14,7 +14,7 @@ source ./helper.sh
 debug "debug mode is on"
 debug "Get functions call from osc-api.json path: $FROM_PATH"
 
-default_endpoint=$(cat osc-api-api.json | jq -r .servers[0].url)
+default_endpoint=$(cat osc-api.json | jq -r .servers[0].url)
 if [[ "$default_endpoint" == "null" ]]; then
    default_endpoint='https://api.{region}.outscale.com/api/v1'
 fi
@@ -30,8 +30,8 @@ if [[ $path_begin_l != 0 ]]; then
     default_endpoint=${default_endpoint:0:-$path_begin_l}
 fi
 
-debug $path_begin
-debug $default_endpoint
+debug "endpoint:" $default_endpoint
+debug "path begin:" $path_begin
 
 
 dash_this_arg()
@@ -83,7 +83,7 @@ cli_c_type_parser()
     type=$2
     indent_base=$3
     indent_plus="$indent_base    "
-    snake_a=$(to_snakecase <<< $a)
+    snake_a=$(bin/path_to_snakecase  $a)
     snake_a=$( if [ "default" == "$snake_a" ] ; then echo default_arg; else echo $snake_a; fi )
 
     if [ 'int' == "$type" ]; then
@@ -254,7 +254,6 @@ replace_args()
 	    echo -ne $D3
 	elif [ "$arg_check" == "____make_default_endpoint____" ]; then
 	    debug "____make_default_endpoint____"
-	    debug "$default_endpoint"
 	    bin/construct_endpoint "$default_endpoint"
 	elif [ "$arg_check" == "____call_list_args_descriptions____" ]; then
 	    debug "____call_list_args_descriptions____"
@@ -302,16 +301,16 @@ replace_args()
 	    fi
 
 	    for s in $COMPLEX_STRUCT; do
-		struct_name=$(to_snakecase <<< $s)
+		struct_name=$(bin/path_to_snakecase  $s)
 
-		A_LST=$(jq .components.schemas.$s < osc-api.json | json-search -Kn properties | tr -d '",[]')
+		A_LST=$(./bin/get_argument_list osc-api.json "$s")
 		if [ "$A_LST" != "null" ]; then
 		    echo "static int ${struct_name}_setter(struct ${struct_name} *args, struct osc_str *data);"
 		fi
 	    done
 	    for s in $COMPLEX_STRUCT; do
-		struct_name=$(to_snakecase <<< $s)
-		A_LST=$(jq .components.schemas.$s < osc-api.json | json-search -Kn properties | tr -d '",[]')
+		struct_name=$(bin/path_to_snakecase  $s)
+		A_LST=$(./bin/get_argument_list osc-api.json "$s")
 		if [ "$A_LST" != "null" ]; then
 		    cat <<EOF
 static int ${struct_name}_setter(struct ${struct_name} *args, struct osc_str *data) {
@@ -352,18 +351,18 @@ EOF
 	    # functions
 	    for s in $COMPLEX_STRUCT; do
 		#for s in "skip"; do
-		struct_name=$(to_snakecase <<< $s)
+		struct_name=$(bin/path_to_snakecase  $s)
 
 		local componant=$(jq .components.schemas.$s < osc-api.json)
 		A_LST=$(bin/get_argument_list osc-api.json "$s")
-		if [ "$A_LST" != "null" ]; then
+		if [[ "$A_LST" != "null" ]]; then
 		    echo  "int ${struct_name}_parser(void *v_s, char *str, char *aa, struct ptr_array *pa) {"
 
 		    echo "	    struct $struct_name *s = v_s;"
 		    echo "	    int aret = 0;"
 		    for a in $A_LST; do
 			t=$(get_type2 "$s" "$a")
-			snake_n=$(to_snakecase <<< $a)
+			snake_n=$(bin/path_to_snakecase  $a)
 
 			echo "	if ((aret = argcmp(str, \"$a\")) == 0 || aret == '=' || aret == '.') {"
 			cli_c_type_parser "$a" "$t" "        "
@@ -453,11 +452,12 @@ EOF
 			     }
 EOF
 
-		for a in $arg_list ; do
-		    type=$(get_type $l $a)
-		    snake_a=$(to_snakecase <<< $a)
+		if [[ "$arg_list" != "null" ]]; then
+		    for a in $arg_list ; do
+			type=$(get_type $l $a)
+			snake_a=$(bin/path_to_snakecase  $a)
 
-		    cat <<EOF
+			cat <<EOF
 			      if ((aret = argcmp(next_a, "$a")) == 0 || aret == '='  || aret == '.') {
 			      	 char *eq_ptr = strchr(next_a, '=');
 			      	 if (eq_ptr) {
@@ -466,8 +466,9 @@ EOF
 				    incr = 1;
 				 }
 EOF
-		    cli_c_type_parser "$a" "$type" "				      "
-		done
+			cli_c_type_parser "$a" "$type" "				      "
+		    done
+		fi
 
 		cat <<EOF
 			    {

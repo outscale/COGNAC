@@ -58,7 +58,11 @@ get_type_direct() {
 		elif [[ "$sub_type" == 'number' ]]; then
 		    types="array double"
 		elif [[ "$sub_type" == 'null' ]]; then
-		    local osub_ref=$(json-search -R '$ref' <<< ${arg_info})
+		    local osub_ref=$(json-search -Rn '$ref' <<< ${arg_info})
+		    if [[ $osub_ref == "null" ]]; then
+			echo "array string"
+			return 0
+		    fi
 		    local sub_ref=$(cut  -d '/' -f 4 <<< $osub_ref 2> /dev/null)
 		    osub_ref=$(cut -c 2- <<< $osub_ref | sed 's|/|.|g')
 		    local sub_ref_properties=$(jq $osub_ref.properties < osc-api.json 2> /dev/null)
@@ -79,7 +83,12 @@ get_type_direct() {
 	local the_one=$(jq .[0] <<< $one_of)
 	get_type_direct "$the_one"
     else
-	echo ref $(json-search -R '$ref' <<< ${arg_info} | cut  -d '/' -f 4)
+	local ref=$(json-search -R '$ref' <<< ${arg_info})
+	if [[ $ref == "null" ]]; then
+	    echo "ref null"
+	else
+	    echo ref $(cut  -d '/' -f 4 <<< $ref)
+	fi
     fi
 }
 
