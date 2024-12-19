@@ -33,7 +33,7 @@ For the Outscale API, the YAML source is converted to JSON using `yq`: (https://
 When generating API calls, COGNAC by default assumes that the OpenAPI file contains components named CallRequest.
 For example, if the API has a call named `CreatePony`, the corresponding component should be located at `#/components/schemas/CreatePonyRequest`.
 
-You can change the suffix of functions using `./configure --function-suffix FUNCTION_SUFFIX`
+You can modify the suffix of functions by using `--function-suffix=FUNCTION_SUFFIX` option with `./configure` command.
 
 Or you can generate functions using what is inside `paths`, using `./configure --from-path`
 
@@ -58,8 +58,8 @@ Run the following command:
 ```bash
 --function-suffix Input
 ```
-Look for Function named XInput instead of XRequest.
 
+Search for functions named XInput instead of XRequest.
 ```bash
 --api-script='curl -s https://ponyapi.yolo | yq $(YQ_ARG) > osc-api.json'
 ```
