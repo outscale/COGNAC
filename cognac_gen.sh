@@ -11,6 +11,29 @@ shopt -s expand_aliases
 
 source ./helper.sh
 
+debug "debug mode is on"
+debug "Get functions call from osc-api.json path: $FROM_PATH"
+
+default_endpoint=$(cat osc-api.json | jq -r .servers[0].url)
+if [[ "$default_endpoint" == "null" ]]; then
+   default_endpoint='https://api.{region}.outscale.com/api/v1'
+fi
+#default_endpoint='https://api.{region}.outscale.com'
+
+debug $default_endpoint
+
+path_begin=$(bin/get_path_begin.sh "$default_endpoint")
+path_begin_l=${#path_begin}
+if [[ $path_begin_l != 0 ]]; then
+    path_begin="/$path_begin"
+    path_begin_l=$(($path_begin_l + 1))
+    default_endpoint=${default_endpoint:0:-$path_begin_l}
+fi
+
+debug "endpoint:" $default_endpoint
+debug "path begin:" $path_begin
+
+
 dash_this_arg()
 {
     local cur="$1"
@@ -52,7 +75,6 @@ dash_this()
     else
 	dashed_args="$dashed_args --$arg"
     fi
-
 }
 
 cli_c_type_parser()
@@ -61,7 +83,7 @@ cli_c_type_parser()
     type=$2
     indent_base=$3
     indent_plus="$indent_base    "
-    snake_a=$(to_snakecase <<< $a)
+    snake_a=$(bin/path_to_snakecase  $a)
     snake_a=$( if [ "default" == "$snake_a" ] ; then echo default_arg; else echo $snake_a; fi )
 
     if [ 'int' == "$type" ]; then
@@ -207,70 +229,88 @@ replace_args()
     SDK_VERSION=$(cat sdk-version)
     while IFS= read -r line
     do
-	arg_check=$(bin/line_check ____args____ ____func_code____ ____functions_proto____ ____cli_parser____ ____complex_struct_func_parser____ ____complex_struct_to_string_func____ ____call_list_dec____ ____call_list_descriptions____ ____call_list_args_descriptions____ <<< "$line")
+	arg_check=$(bin/line_check ____args____ ____func_code____ ____functions_proto____ ____cli_parser____ ____complex_struct_func_parser____ ____complex_struct_to_string_func____ ____call_list_dec____ ____call_list_descriptions____ ____call_list_args_descriptions____ ____make_default_endpoint____ <<< "$line")
 
 	if [ "$arg_check" == "____args____" ]; then
+	    debug "____args____"
 	    ./mk_args.${lang}.sh
 	elif [ "$arg_check" == "____call_list_descriptions____" ]; then
+	    debug "____call_list_descriptions____"
 	    DELIMES=$(cut -d '(' -f 2 <<< $line | tr -d ')')
 	    D1=$(cut -d ';' -f 1  <<< $DELIMES | tr -d "'")
 	    D2=$(cut -d ';' -f 2  <<< $DELIMES | tr -d "'")
 	    D3=$(cut -d ';' -f 3  <<< $DELIMES | tr -d "'")
 	    for x in $CALL_LIST ; do
 		echo -en $D1
-		local required=$(json-search ${x}Request < osc-api.json | json-search required 2>&1 | tr -d '[]\n"' | tr -s ' ' | sed 's/nothing found//g')
+		local caml_x=$(bin/path_to_camelcase "$x")
+		local required=$(bin/get_argument_list osc-api.json "${x}${FUNCTION_SUFFIX}" --require)
 		local usage_required=$( for a in $(echo $required | tr -d ','); do echo -n " --${a}=${a,,}"; done )
-		local usage="\"Usage: oapi-cli $x ${usage_required} [OPTIONS]\n\""
+		local usage="\"Usage: oapi-cli $caml_x ${usage_required} [OPTIONS]\n\""
 		local call_desc=$(jq .paths.\""/$x"\".description < osc-api.json | sed 's/<br \/>//g' | tr -d '"' | fold -s | sed 's/^/"/;s/$/\\n"/')
 
 		echo $usage $call_desc \""\nRequired Argument:" $required "\n\""
 		echo -en $D2
 	    done
 	    echo -ne $D3
+	elif [ "$arg_check" == "____make_default_endpoint____" ]; then
+	    debug "____make_default_endpoint____"
+	    bin/construct_endpoint "$default_endpoint"
 	elif [ "$arg_check" == "____call_list_args_descriptions____" ]; then
+	    debug "____call_list_args_descriptions____"
 	    DELIMES=$(cut -d '(' -f 2 <<< $line | tr -d ')')
 	    D1=$(cut -d ';' -f 1  <<< $DELIMES | tr -d "'")
 	    D2=$(cut -d ';' -f 2  <<< $DELIMES | tr -d "'")
 	    D3=$(cut -d ';' -f 3  <<< $DELIMES | tr -d "'")
 	    for x in $CALL_LIST ; do
-		st_info=$(json-search -s  ${x}Request < osc-api.json)
-		A_LST=$(json-search -K properties <<< $st_info | tr -d '",[]')
+		st_info=$(json-search "${x}${FUNCTION_SUFFIX}" < osc-api.json)
+		A_LST=$(bin/get_argument_list osc-api.json ${x}${FUNCTION_SUFFIX})
 
 		echo -en $D1
 		for a in $A_LST; do
 		    local t=$(get_type3 "$st_info" "$a")
-		    local snake_n=$(to_snakecase <<< $a)
+		    local snake_n=$(bin/path_to_snakecase $a)
 		    echo "\"--$a: $t\\n\""
+
 		    get_type_description "$st_info" "$a" | sed 's/<br \/>//g;s/\\"/\&quot;/g' | tr -d '"' | fold -s -w92 | sed 's/^/\t"  /;s/$/\\n"/;s/\&quot;/\\"/g'
 		done
 		echo -en $D2
 	    done
 	    echo -ne $D3
 	elif [ "$arg_check" == "____call_list_dec____" ]; then
+	    debug "____call_list_dec____"
 	    DELIMES=$(cut -d '(' -f 2 <<< $line | tr -d ')')
 	    D1=$(cut -d ';' -f 1  <<< $DELIMES | tr -d "'")
 	    D2=$(cut -d ';' -f 2  <<< $DELIMES | tr -d "'")
 	    D3=$(cut -d ';' -f 3  <<< $DELIMES | tr -d "'")
 	    for x in $CALL_LIST ;do
+		local caml_x=$(bin/path_to_camelcase "$x")
 		echo -en $D1
-		echo -n $x
+		echo -n $caml_x
 		echo -en $D2
 	    done
 	    echo -ne $D3
 	elif [ "$arg_check" == "____complex_struct_to_string_func____" ]; then
-	    COMPLEX_STRUCT=$(jq .components < osc-api.json | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response | grep -v Request)
+	    debug "____complex_struct_to_string_func____"
+	    COMPLEX_STRUCT=$(jq .components < osc-api.json | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response)
+
+	    if [[ "$FROM_PATH" != "1" ]]; then
+		local CALLS=$(for  c in $(cat call_list) ; do  echo ${c}${FUNCTION_SUFFIX} ; done)
+		local DIFF=$(echo ${CALLS[@]} ${COMPLEX_STRUCT[@]} | tr ' ' '\n' | sort | uniq -u)
+
+		COMPLEX_STRUCT="$DIFF"
+	    fi
 
 	    for s in $COMPLEX_STRUCT; do
-		struct_name=$(to_snakecase <<< $s)
+		struct_name=$(bin/path_to_snakecase  $s)
 
-		A_LST=$(jq .components.schemas.$s < osc-api.json | json-search -Kn properties | tr -d '",[]')
+		A_LST=$(./bin/get_argument_list osc-api.json "$s")
 		if [ "$A_LST" != "null" ]; then
 		    echo "static int ${struct_name}_setter(struct ${struct_name} *args, struct osc_str *data);"
 		fi
 	    done
 	    for s in $COMPLEX_STRUCT; do
-		struct_name=$(to_snakecase <<< $s)
-		A_LST=$(jq .components.schemas.$s < osc-api.json | json-search -Kn properties | tr -d '",[]')
+		struct_name=$(bin/path_to_snakecase  $s)
+		A_LST=$(./bin/get_argument_list osc-api.json "$s")
 		if [ "$A_LST" != "null" ]; then
 		    cat <<EOF
 static int ${struct_name}_setter(struct ${struct_name} *args, struct osc_str *data) {
@@ -287,12 +327,21 @@ EOF
 		fi
 	    done
 	elif [ "$arg_check" == "____complex_struct_func_parser____" ]; then
-	    COMPLEX_STRUCT=$(jq .components < osc-api.json | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response | grep -v Request)
+	    debug "____complex_struct_func_parser____"
+	    COMPLEX_STRUCT=$(jq .components < osc-api.json | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response)
+
+	    if [[ "$FROM_PATH" != "1" ]]; then
+		local CALLS=$(for  c in $(cat call_list) ; do  echo ${c}${FUNCTION_SUFFIX} ; done)
+		local DIFF=$(echo ${CALLS[@]} ${COMPLEX_STRUCT[@]} | tr ' ' '\n' | sort | uniq -u)
+
+		COMPLEX_STRUCT="$DIFF"
+	    fi
 
 	    # prototypes
 	    for s in $COMPLEX_STRUCT; do
-		struct_name=$(to_snakecase <<< $s)
-		A_LST=$(jq .components.schemas.$s < osc-api.json | json-search -Kn properties | tr -d '",[]')
+		struct_name=$(bin/path_to_snakecase "$s")
+		A_LST=$(bin/get_argument_list osc-api.json "$s")
+
 		if [ "$A_LST" != "null" ]; then
 		    echo  "int ${struct_name}_parser(void *s, char *str, char *aa, struct ptr_array *pa);"
 		fi
@@ -302,18 +351,18 @@ EOF
 	    # functions
 	    for s in $COMPLEX_STRUCT; do
 		#for s in "skip"; do
-		struct_name=$(to_snakecase <<< $s)
+		struct_name=$(bin/path_to_snakecase  $s)
 
 		local componant=$(jq .components.schemas.$s < osc-api.json)
-		A_LST=$(json-search -Kn properties <<< $componant | tr -d '",[]')
-		if [ "$A_LST" != "null" ]; then
+		A_LST=$(bin/get_argument_list osc-api.json "$s")
+		if [[ "$A_LST" != "null" ]]; then
 		    echo  "int ${struct_name}_parser(void *v_s, char *str, char *aa, struct ptr_array *pa) {"
 
 		    echo "	    struct $struct_name *s = v_s;"
 		    echo "	    int aret = 0;"
 		    for a in $A_LST; do
 			t=$(get_type2 "$s" "$a")
-			snake_n=$(to_snakecase <<< $a)
+			snake_n=$(bin/path_to_snakecase  $a)
 
 			echo "	if ((aret = argcmp(str, \"$a\")) == 0 || aret == '=' || aret == '.') {"
 			cli_c_type_parser "$a" "$t" "        "
@@ -349,14 +398,14 @@ EOF
 	    done
 
 	elif [ "$arg_check" == "____cli_parser____" ] ; then
+	    debug "____cli_parser____"
 	    for l in $CALL_LIST; do
-		snake_l=$(to_snakecase <<< $l)
-		arg_list=$(json-search ${l}Request < osc-api.json \
-			       | json-search -K properties \
-			       | tr -d "[]\"," | sed '/^$/d')
+		snake_l=$(bin/path_to_snakecase "$l")
+		local caml_l=$(bin/path_to_camelcase "$l")
+		arg_list=$(bin/get_argument_list osc-api.json ${l}${FUNCTION_SUFFIX})
 
 		cat <<EOF
-              if (!strcmp("$l", av[i])) {
+              if (!strcmp("$caml_l", av[i])) {
 		     auto_osc_json_c json_object *jobj = NULL;
 		     auto_ptr_array struct ptr_array opa = {0};
 		     struct ptr_array *pa = &opa;
@@ -403,11 +452,12 @@ EOF
 			     }
 EOF
 
-		for a in $arg_list ; do
-		    type=$(get_type $l $a)
-		    snake_a=$(to_snakecase <<< $a)
+		if [[ "$arg_list" != "null" ]]; then
+		    for a in $arg_list ; do
+			type=$(get_type $l $a)
+			snake_a=$(bin/path_to_snakecase  $a)
 
-		    cat <<EOF
+			cat <<EOF
 			      if ((aret = argcmp(next_a, "$a")) == 0 || aret == '='  || aret == '.') {
 			      	 char *eq_ptr = strchr(next_a, '=');
 			      	 if (eq_ptr) {
@@ -416,8 +466,9 @@ EOF
 				    incr = 1;
 				 }
 EOF
-		    cli_c_type_parser "$a" "$type" "				      "
-		done
+			cli_c_type_parser "$a" "$type" "				      "
+		    done
+		fi
 
 		cat <<EOF
 			    {
@@ -457,17 +508,25 @@ EOF
 EOF
 	    done
 	elif [ "$arg_check" == "____functions_proto____" ] ; then
+	    debug "____functions_proto____"
 	    for l in $CALL_LIST; do
-		local snake_l=$(to_snakecase <<< $l)
+		local snake_l=$(bin/path_to_snakecase $l)
 		echo "int osc_${snake_l}(struct osc_env *e, struct osc_str *out, struct osc_${snake_l}_arg *args);"
 	    done
 	elif [ "$arg_check" == "____func_code____" ]; then
+	    debug "____func_code____"
 	    for x in $CALL_LIST; do
-		local snake_x=$(to_snakecase <<< $x)
-		local args=$(json-search ${x}Request < osc-api.json \
-				 | json-search -K properties  | tr -d "[]\",")
+		local snake_x=$(bin/path_to_snakecase $x)
+		#local caml_l=$(bin/path_to_camelcase "$x")
+		local args=$(bin/get_argument_list osc-api.json ${x}${FUNCTION_SUFFIX})
+		local have_post=$(cat osc-api.json | json-search ${x}${FUNCTION_SUFFIX} | jq .post)
 		dashed_args=""
+		local have_quey=0
 		for arg in $args; do
+		    placement=$(bin/arg_placement osc-api.json $x $arg)
+		    if [[ $placement == "query" ]]; then
+			have_quey=1
+		    fi
 		    dash_this "$x" "$arg"
 		done
 
@@ -475,13 +534,31 @@ EOF
 		do
 		    if [[ $( grep -q ____construct_data____ <<< "$fline" )$? == 0 ]]; then
 			./construct_data.${lang}.sh $x
+		    elif [[  $( grep -q ____construct_path____ <<< "$fline" )$? == 0 ]]; then
+			bin/construct_path $x "$path_begin"
+		    elif [[  $( grep -q ____maybe_query_init____ <<< "$fline" )$? == 0 ]]; then
+			if [[ "$have_quey" == "1" ]]; then
+			    echo -e "\tstruct osc_str query;"
+			    echo -e "\tosc_init_str(&query);"
+			fi
+		    elif [[  $( grep -q ____maybe_query_set____ <<< "$fline" )$? == 0 ]]; then
+			if [[ "$have_quey" == "1" ]]; then
+			    echo -e "\tosc_str_append_string(&end_call, query.buf);"
+			    echo -e "\tosc_deinit_str(&query);"
+			fi
+		    elif [[  $( grep -q ____curl_set_methode____ <<< "$fline" )$? == 0 ]]; then
+			if [[ "$FROM_PATH" == "1" && "$have_post" == "null" ]]; then
+			    echo '       /* get doesn t need curl_easy_setopt */'
+			else
+			    echo '        curl_easy_setopt(e->c, CURLOPT_POSTFIELDS, r ? data.buf : "");'
+			fi
 		    else
-			sed "s/____func____/$x/g; s/____snake_func____/$snake_x/g;s/____dashed_args____/$dashed_args/g" <<< "$fline"
+			sed "s/____snake_func____/$snake_x/g;s/____dashed_args____/$dashed_args/g" <<< "$fline"
 		    fi
 		done < function.${lang}
 	    done
 	else
-	    sed "s/____call_list____/${CALL_LIST}/g;s/____piped_call_list____/${PIPED_CALL_LIST}/;s/____api_version____/${API_VERSION}/g;s/____sdk_version____/${SDK_VERSION}/g;s/____cli_version____/$(cat cli-version)/g;s/____cli_name____/${CLI_NAME}/" <<< "$line";
+	    sed "s|____call_list____|${CALL_LIST}|g;s+____piped_call_list____+${PIPED_CALL_LIST}+;s/____api_version____/${API_VERSION}/g;s/____sdk_version____/${SDK_VERSION}/g;s/____cli_version____/$(cat cli-version)/g;s/____cli_name____/${CLI_NAME}/;s/____sdk_name____/$SDK_NAME/g" <<< "$line"
 	fi
     done < $1
 }

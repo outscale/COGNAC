@@ -65,15 +65,15 @@ struct osc_str {
 	char *buf;
 };
 
-#define OSC_ENV_FREE_AK 1 << 0
-#define OSC_ENV_FREE_REGION 1 << 1
-#define OSC_VERBOSE_MODE  1 << 2 /* curl verbose mode + print request content */
-#define OSC_INSECURE_MODE 1 << 3 /* see --insecure option of curl */
-#define OSC_ENV_FREE_CERT 1 << 4
-#define OSC_ENV_FREE_SSLKEY 1 << 5
-#define OSC_ENV_FREE_SK 1 << 6
-#define OSC_ENV_FREE_PROXY 1 << 7
-#define OSC_ENV_FREE_ENDPOINT 1 << 8
+#define OSC_ENV_FREE_AK (1 << 0)
+#define OSC_ENV_FREE_REGION (1 << 1)
+#define OSC_VERBOSE_MODE  (1 << 2) /* curl verbose mode + print request content */
+#define OSC_INSECURE_MODE (1 << 3) /* see --insecure option of curl */
+#define OSC_ENV_FREE_CERT (1 << 4)
+#define OSC_ENV_FREE_SSLKEY (1 << 5)
+#define OSC_ENV_FREE_SK (1 << 6)
+#define OSC_ENV_FREE_PROXY (1 << 7)
+#define OSC_ENV_FREE_ENDPOINT (1 << 8)
 
 #define OSC_ENV_FREE_AK_SK (OSC_ENV_FREE_AK | OSC_ENV_FREE_SK)
 
@@ -134,6 +134,7 @@ struct osc_additional_strings {
 
 ____args____
 
+int osc_set_extra_flag_from_conf(const char *profile, unsigned int *flag);
 int osc_load_ak_sk_from_conf(const char *profile, char **ak, char **sk);
 int osc_load_region_from_conf(const char *profile, char **region);
 int osc_load_loging_password_from_conf(const char *profile,

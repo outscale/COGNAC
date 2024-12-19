@@ -16,7 +16,12 @@ LD_JSONCLIB_PATH=''
 API_VERSION=master
 SDK_VERSION=0xC061AC
 CLI_NAME=oapi-cli
+FUNCTION_SUFFIX=Request
+FROM_PATH=0
+SDK_NAME='osc-sdk'
+FUNCLIST_ARG=''
 API_SCRIPT='curl -s https://raw.githubusercontent.com/outscale/osc-api/$(API_VERSION)/outscale.yaml | yq $(YQ_ARG) > osc-api.json'
+DEBUG_MODE=0
 
 inc=1
 for arg in $@; do
@@ -28,6 +33,11 @@ for arg in $@; do
    --wget-json-search			wget json-search.Appimage
    --gnu-sed-alias			use gsed for sed
    --cli-name=Name			set cli name, default: oapi-cli
+   --sdk-name=name			set sdk Name, default: osc-sdk
+   --debug-mode				enable debug in cognac (output on stderr)
+   --function-suffix=suffix		suffix use to find function in componants, default: Request
+   --funclist-arg=arg			arguments to pass to funclist
+   --from-path				use paths instead of componant suffix for functions generations
    --api-script=script			how to generate osc-api.json
    --yq-go                              use go version of yq, that use diferents arguments
    --curl-path=PATH			path to curl source root
@@ -66,14 +76,24 @@ EOF
 	HAVE_RECOMPILE_JSON_C=1
     elif [ "--yq-go" = $arg ]; then
 	YQ_ARG="-o json"
+    elif [ "--function-suffix" =  $( echo "$arg" | cut -d '=' -f 1) ]; then
+	FUNCTION_SUFFIX=$( echo $arg | cut -f 2 -d '=' )
+    elif [ "--funclist-arg" =  $( echo "$arg" | cut -d '=' -f 1) ]; then
+	FUNCLIST_ARG=$( echo $arg | cut -f 2 -d '=' )
     elif [ "--gnu-sed-alias" = $arg ]; then
 	SED_ALIAS="'alias sed=gsed'"
+    elif [ "--debug-mode" = $arg ]; then
+	DEBUG_MODE=1
+    elif [ "--from-path" = $arg ]; then
+	FROM_PATH=1
     elif [ "--target-api" = $( echo "$arg" | cut -d '=' -f 1) ]; then
 	API_VERSION=$( echo $arg | cut -f 2 -d '=' )
     elif [ "--cli-name" = $( echo "$arg" | cut -d '=' -f 1) ]; then
 	CLI_NAME=$( echo $arg | cut -f 2 -d '=' )
     elif [ "--api-script" = $( echo "$arg" | cut -d '=' -f 1) ]; then
 	API_SCRIPT="$( echo ${!inc} | cut -f 2 -d '=' )"
+    elif [ "--sdk-name" = $( echo "$arg" | cut -d '=' -f 1) ]; then
+	SDK_NAME="$( echo ${!inc} | cut -f 2 -d '=' )"
     elif [ "--sdk-version" = $( echo "$arg" | cut -d '=' -f 1) ]; then
 	SDK_VERSION=$( echo $arg | cut -f 2 -d '=' )
     elif [ "--curl-path" = $( echo "$arg" | cut -d '=' -f 1) ]; then
@@ -114,6 +134,21 @@ echo JSON_C_CFLAGS=$JSON_C_CFLAGS >> config.mk
 echo JSON_C_RULE=$JSON_C_RULE >> config.mk
 echo API_VERSION=$API_VERSION >> config.mk
 echo CLI_NAME=$CLI_NAME >> config.mk
+if [[ "$FROM_PATH" == "1" ]]; then
+    FUNCLIST_ARG="--from-path $FUNCLIST_ARG"
+    FUNCTION_SUFFIX=""
+fi
+
+echo FUNCTION_SUFFIX=$FUNCTION_SUFFIX >> config.mk
+
+if [[ "$FUNCTION_SUFFIX" != "Request" && "$FUNCTION_SUFFIX" != "" ]]; then
+    FUNCLIST_ARG="--func-suffix $FUNCTION_SUFFIX $FUNCLIST_ARG"
+fi
+
+echo SDK_NAME=$SDK_NAME >> config.mk
+echo FUNCLIST_ARG=$FUNCLIST_ARG >> config.mk
+echo DEBUG_MODE=$DEBUG_MODE >> config.mk
+echo FROM_PATH=$FROM_PATH >> config.mk
 echo -e "osc-api.json:: config.sh\n\t$API_SCRIPT" >> config.mk
 echo $SDK_VERSION > sdk-version
 echo "config done:"

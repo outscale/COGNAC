@@ -279,6 +279,45 @@ static char *osc_strdup(const char *str) {
 	} while (0)
 
 
+int osc_set_extra_flag_from_conf(const char *profile, unsigned int *flag)
+{
+	char buf[1024];
+	const char *cfg = cfg_path;
+	auto_osc_json_c struct json_object *to_free = NULL;
+	struct json_object *json_tmp, *js = NULL;
+
+	if (!cfg) {
+		LOAD_CFG_GET_HOME(buf);
+		cfg = buf;
+	}
+	TRY(access(cfg, R_OK), "can't open/read %s\n", cfg);
+	js = json_object_from_file(cfg);
+	TRY(!js, "can't load json-file %s (json might have incorect syntaxe)\n", cfg);
+	to_free = js;
+	js = json_object_object_get(js, profile);
+	TRY(!js, "can't find profile %s\n", profile);
+
+	json_tmp = json_object_object_get(js, "ssl_verify");
+	if (json_tmp) {
+		if (!json_object_get_boolean(json_tmp) ||
+		    !json_object_get_int(json_tmp)) {
+			*flag = *flag | OSC_INSECURE_MODE;
+		} else {
+			*flag = *flag & (~OSC_INSECURE_MODE);
+		}
+	}
+	json_tmp = json_object_object_get(js, "verbose");
+	if (json_tmp) {
+		if (json_object_get_boolean(json_tmp) ||
+		    json_object_get_int(json_tmp)) {
+			*flag = *flag | OSC_VERBOSE_MODE;
+		} else {
+			*flag = *flag & (~OSC_VERBOSE_MODE);
+		}
+	}
+	return 0;
+}
+
 int osc_load_ak_sk_from_conf(const char *profile, char **ak, char **sk)
 {
 	char buf[1024];
@@ -506,14 +545,14 @@ int osc_init_sdk_ext(struct osc_env *e, const char *profile, unsigned int flag,
 	*e = (struct osc_env){0};
 	char *ca = getenv("CURL_CA_BUNDLE");
 	char *endpoint;
-	char user_agent[sizeof "osc-sdk-c/" + OSC_SDK_VERSON_L];
+	char user_agent[sizeof "____sdk_name____-c/" + OSC_SDK_VERSON_L];
 	char *cert = getenv("OSC_X509_CLIENT_CERT");
 	char *sslkey = getenv("OSC_X509_CLIENT_KEY");
 	char *auth = getenv("OSC_AUTH_METHOD");
 	char *force_log = cfg_login(cfg);
 	char *force_pass = cfg_pass(cfg);
 
-	strcpy(stpcpy(user_agent, "osc-sdk-c/"), osc_sdk_version_str());
+	strcpy(stpcpy(user_agent, "____sdk_name____-c/"), osc_sdk_version_str());
 	e->region = getenv("OSC_REGION");
 	e->flag = flag;
 	e->auth_method = cfg ? cfg->auth_method : OSC_AKSK_METHOD;
@@ -585,15 +624,14 @@ int osc_init_sdk_ext(struct osc_env *e, const char *profile, unsigned int flag,
 		if (f < 0)
 			return -1;
 		e->flag |= f;
+		osc_set_extra_flag_from_conf(profile, &flag);
 	}
 
 	if (!e->region)
 		e->region = "eu-west-2";
 
 	if (!endpoint && !e->endpoint_allocated_) {
-		osc_str_append_string(&e->endpoint, "https://api.");
-		osc_str_append_string(&e->endpoint, e->region);
-		osc_str_append_string(&e->endpoint, ".outscale.com");
+____make_default_endpoint____
 	} else {
 		if (e->endpoint_allocated_) {
 			osc_str_append_string(&e->endpoint,

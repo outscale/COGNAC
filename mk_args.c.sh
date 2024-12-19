@@ -7,7 +7,11 @@ source "./helper.sh"
 CALL_LIST_FILE=./call_list
 CALL_LIST=$(cat $CALL_LIST_FILE)
 
-COMPLEX_STRUCT=$(jq .components < osc-api.json | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response | grep -v Request)
+if [[ "$FROM_PATH" != "1" ]]; then
+COMPLEX_STRUCT=$(jq .components < osc-api.json | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response | grep -v ${FUNCTION_SUFFIX})
+else
+COMPLEX_STRUCT=$(jq .components < osc-api.json | json-search -KR schemas | tr -d '"' | sed 's/,/\n/g' | grep -v Response)
+fi
 
 type_to_ctype() {
     local t="$1"
@@ -39,7 +43,7 @@ type_to_ctype() {
         int is_set_${snake_name};
 EOF
 	t=$( cut -f 2 -d ' ' <<< $t )
-	c_type="struct $(to_snakecase <<< $t) "
+	c_type="struct $(bin/path_to_snakecase  $t) "
     elif [ "array" == $( cut -d ' ' -f 1 <<< $t) ]; then
 	if [ "ref" == $( cut -d ' ' -f 2 <<< $t) ]; then
 	    t=$( cut -f 3 -d ' ' <<< $t )
@@ -47,7 +51,7 @@ EOF
         char *${snake_name}_str;
         int nb_${snake_name};
 EOF
-	    c_type="struct $(to_snakecase <<< $t) *"
+	    c_type="struct $(bin/path_to_snakecase  $t) *"
 	fi
     fi
     echo "	${c_type}${snake_name};"
@@ -60,15 +64,15 @@ write_struct() {
 
     if [ "$st_info" == "" ]; then
 	st_info=$(jq .components.schemas.$s0 < osc-api.json)
-	A_LST=$(json-search -K properties <<< $st_info | tr -d '",[]')
+	A_LST=$(./bin/get_argument_list  osc-api.json "$s")
     fi
 
-    st_s_name=$(to_snakecase <<< $s0)
+    st_s_name=$(bin/path_to_snakecase  $s0)
 
     echo  "struct $st_s_name {"
     for a in $A_LST; do
 	local t=$(get_type3 "$st_info" "$a")
-	local snake_n=$(to_snakecase <<< $a)
+	local snake_n=$(bin/path_to_snakecase  $a)
 	echo '        /*'
 	get_type_description "$st_info" "$a" | tr -d '"' | fold -s -w70 | sed -e  's/^/         * /g'
 	echo '         */'
@@ -89,7 +93,7 @@ create_struct() {
     #for s in "skip"; do
     local s="$1"
     local st0_info=$(jq .components.schemas.$s < osc-api.json)
-    local A0_LST=$(json-search -Kn properties <<< $st0_info | tr -d '",[]')
+    local A0_LST=$(./bin/get_argument_list  osc-api.json "$s")
 
     if [ "${structs[$s]}" != "" ]; then
 	return
@@ -118,27 +122,34 @@ create_struct() {
 
 declare -A structs
 
+debug "____args____: create_struct loop"
 for s in $COMPLEX_STRUCT; do
     create_struct "$s"
 done
 
+debug "____args____: call list loop"
 for l in $CALL_LIST ;do
-    snake_l=$(to_snakecase <<< $l)
-    request=$(json-search -s  ${l}Request < osc-api.json)
-    ARGS_LIST=$(json-search -KR "properties" <<< $request | tr -d '"' | sed 's/,/\n/g')
+    snake_l=$(bin/path_to_snakecase "$l")
+    required=$(bin/get_argument_list osc-api.json "${l}${FUNCTION_SUFFIX}" --require)
+    ARGS_LIST=$(bin/get_argument_list osc-api.json "${l}${FUNCTION_SUFFIX}")
 
     echo "struct osc_${snake_l}_arg  {"
-    echo -n "        /* Required:"
-    json-search required 2>&1 <<< $request | tr -d "[]\"\n" | tr -s ' ' | sed 's/nothing found/none/g' | to_snakecase
+    echo  "        /* Required: $required"
     echo " */"
 
     for x in $ARGS_LIST ;do
-	snake_name=$(to_snakecase <<< "$x")
+	snake_name=$(bin/path_to_snakecase  "$x")
 
 	t=$(get_type "$l" "$x")
 	#echo "get type: $func $x"
 	echo '        /*'
-	get_type_description "$request" "$x" | tr -d '"' | fold -s -w70 | sed -e  's/^/         * /g' | sed "s/null/See '$snake_name' type documentation/"
+	if [[ "$FROM_PATH" != "1" ]]; then
+	    request=$(json-search -s  ${l}${FUNCTION_SUFFIX} < osc-api.json)
+
+	    get_type_description "$request" "$x" | tr -d '"' | fold -s -w70 | sed -e  's/^/         * /g' | sed "s/null/See '$snake_name' type documentation/"
+	else
+	    echo "         * $x"
+	fi
 	echo '         */'
 	#echo "/* TYPE: $t */"
 	type_to_ctype "$t" "${snake_name}"
