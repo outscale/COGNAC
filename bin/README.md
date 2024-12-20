@@ -25,9 +25,9 @@ This is also much faster than multiple calls to grep.
 This utility is used to check if osc-api.json has been generated correctly. It verifies that the file is a valid JSON and contains at least one API function.
 
 # path_to_snakecase
-snakecasise an object name.
-example `ReadVms` become `read_vms`
-`/my/{NAME}/getId` become `my_name_get_id`
+Converts an object name to snake_case.
+example `ReadVms` becomes `read_vms`
+`/my/{NAME}/getId` becomes `my_name_get_id`
 
 usage:
 ```
@@ -35,9 +35,9 @@ usage:
 ```
 
 # path_to_camelcase
-camelcasise an object name.
-example `ReadVms` become `read_vms`
-`/my/{NAME}/getId` become `my_name_get_id`
+Converts an object name to camelCase.
+example `read_vms` become `ReadVms`
+`/my/{NAME}/getId` become `myNameGetId`
 
 usage:
 ```
@@ -46,7 +46,8 @@ usage:
 
 # get_argument_list
 
-Take an object componant in `paths` or in `components.schema`, and give a list of all it arguments.
+
+Retrieves an object component from `paths` or `components.schema` and returns a list of all its arguments.
 
 usage:
 ```
@@ -85,7 +86,8 @@ string
 
 # get_path_description
 
-Just return "" so far, as the api I test this with, had no description in the path
+
+Returns an empty string "" for now, as the API I tested this with had no description in the path.
 
 usage:
 ```
@@ -99,12 +101,11 @@ example:
 
 # arg_placement
 
-return where the argument is used.
-`path`, if the argument is use in the path
-`header` if it is an http header
-`query` if it is in a query string
-`data` if it is use in post data
-
+Return where the argument is used:
+`path`: If the argument is used in the URL path.
+`header`: If the argument is used as an HTTP header.
+`query`: If the argument is in a query string.
+`data`: If the argument is used in POST data.
 
 usage:
 ```
@@ -119,7 +120,7 @@ query
 
 # construct_path
 
-generate the C code to create a osc_str that the path of the call.
+Generate the C code to create an osc_str for the path of the call.
 
 example:
 
@@ -131,4 +132,4 @@ osc_str_append_string(&end_call, args->id);
 osc_str_append_string(&end_call, "/get");
 ```
 
-The code generated is not exhaustive, but you get the idea.
+The generated code is not exhaustive, but it conveys the general idea.
