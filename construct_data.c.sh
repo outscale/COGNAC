@@ -6,13 +6,15 @@ func=$1
 
 source ./helper.sh
 
+debug "========= $func ========"
+
 if [[ "complex_struct" == "$2" ]]; then
     base=$(jq .components.schemas.$func < osc-api.json)
-    args=$(json-search -Kn properties  <<< $base | tr -d '",[]')
+    args=$(bin/get_argument_list osc-api.json $func)
     alias get_type=get_type2
 else
-    base=$(json-search ${func}Request < osc-api.json)
-    args=$(json-search -Kn properties <<< $base | tr -d "\n[],\"" | sed 's/  / /g')
+    base=$(json-search ${func}${FUNCTION_SUFFIX} < osc-api.json)
+    args=$(bin/get_argument_list osc-api.json "${func}${FUNCTION_SUFFIX}")
 fi
 
 aditional=$(jq .additionalProperties <<< $base)
@@ -40,9 +42,40 @@ if [[ "$args" == "null" ]]; then
 fi
 
 for x in $args ;do
-    snake_x=$(to_snakecase <<< $x)
+    placement=$(bin/arg_placement osc-api.json $func $x)
+    snake_x=$(bin/path_to_snakecase  $x)
     snake_x=$( if [ "default" == "$snake_x" ] ; then echo default_arg; else echo $snake_x; fi )
     t=$(get_type $func $x)
+
+    if [[ $placement == "path" ]]; then
+	debug "skip $x"
+	continue;
+    elif [[ $placement == "header" ]]; then
+	cat <<EOF
+	if (args->$snake_x) {
+		struct osc_str hdr;
+
+		osc_init_str(&hdr);
+		osc_str_append_string(&hdr, "$x: ");
+		osc_str_append_string(&hdr, args->$snake_x);
+		e->headers = curl_slist_append(e->headers, hdr.buf);
+		curl_easy_setopt(e->c, CURLOPT_HTTPHEADER, e->headers);
+		osc_deinit_str(&hdr);
+	}
+EOF
+	continue;
+    elif [[ $placement == "query" ]]; then
+	cat <<EOF
+	if (args->$snake_x) {
+		if (!query.len)
+			osc_str_append_string(&query, "?$x=");
+		else
+			osc_str_append_string(&query, "&$x=");
+		osc_str_append_string(&query, args->$snake_x);
+	}
+EOF
+	continue;
+    fi
 
     if [ "$t" == 'long long int' ]; then
 	t='int'

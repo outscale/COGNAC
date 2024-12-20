@@ -58,7 +58,11 @@ get_type_direct() {
 		elif [[ "$sub_type" == 'number' ]]; then
 		    types="array double"
 		elif [[ "$sub_type" == 'null' ]]; then
-		    local osub_ref=$(json-search -R '$ref' <<< ${arg_info})
+		    local osub_ref=$(json-search -Rn '$ref' <<< ${arg_info})
+		    if [[ $osub_ref == "null" ]]; then
+			echo "array string"
+			return 0
+		    fi
 		    local sub_ref=$(cut  -d '/' -f 4 <<< $osub_ref 2> /dev/null)
 		    osub_ref=$(cut -c 2- <<< $osub_ref | sed 's|/|.|g')
 		    local sub_ref_properties=$(jq $osub_ref.properties < osc-api.json 2> /dev/null)
@@ -79,7 +83,12 @@ get_type_direct() {
 	local the_one=$(jq .[0] <<< $one_of)
 	get_type_direct "$the_one"
     else
-	echo ref $(json-search -R '$ref' <<< ${arg_info} | cut  -d '/' -f 4)
+	local ref=$(json-search -R '$ref' <<< ${arg_info})
+	if [[ $ref == "null" ]]; then
+	    echo "ref null"
+	else
+	    echo ref $(cut  -d '/' -f 4 <<< $ref)
+	fi
     fi
 }
 
@@ -89,7 +98,18 @@ get_type_direct() {
 get_type3() {
     st_info="$1"
     arg="$2"
-    arg_info=$(json-search $arg <<< $st_info)
+    local path_type=$(bin/get_path_type "$st_info" $arg)
+    if [[ "$path_type" != "null" ]]; then
+	if [[ "$path_type" != "string" ]]; then
+	    debug "get_type3 of $2: '$path_type'"
+	    st_info=$(jq .components.schemas.$path_type < osc-api.json)
+	else
+	    debug "info: $path_type"
+    	    echo $path_type
+    	    return 0
+	fi
+    fi
+    arg_info=$(jq .properties[\"$arg\"] <<< $st_info)
     get_type_direct "$arg_info"
     return 0
 }
@@ -100,6 +120,15 @@ get_type3() {
 get_type2() {
     struct="$1"
     arg="$2"
+    local path_type=$(bin/get_path_type ./osc-api.json $struct $arg)
+    if [[ "$path_type" != "$struct" ]]; then
+	if [[ "$path_type" != 'string' && 'path_type' != 'null' ]]; then
+	    struct=$path_type
+	else
+    	    echo $path_type
+    	    return 0
+	fi
+    fi
     st_info=$(jq .components.schemas.$struct < osc-api.json)
 
     get_type3 "$st_info" "$arg"
@@ -147,6 +176,15 @@ get_sub_type_description() {
 # usage: get_type_description "{FULL COMPONANT JSON}" "ARGUMENT"
 # ex: get_type_description "$(jq .components.schemas.ReadVmsRequest < osc-api.json)" "VmId"
 get_type_description() {
+    PATH_DESC=$(bin/get_path_description "$1" "$2")
+    local PATH_RET=$?
+
+    if [[ "$PATH_RET" == "0" ]]; then
+	echo $PATH_DESC
+	return
+    fi
+
+
     local properties=$(jq .properties.$2 <<< "$1")
     local desc=$(jq .description <<< "$properties")
     local ref=$(json-search '$ref' <<< "$properties" 2>&1 )
@@ -168,7 +206,17 @@ get_type_description() {
 get_type() {
     x=$2
     func=$1
-    local arg_info=$(json-search ${func}Request < osc-api.json | json-search $x)
+    local path_type=$(bin/get_path_type ./osc-api.json $func $x)
+    if [[ "$path_type" != "$func" ]]; then
+	if [[ "$path_type" != 'string' && 'path_type' != 'null' ]]; then
+	    func=$path_type
+	else
+    	    echo $path_type
+    	    return 0
+	fi
+    fi
+
+    local arg_info=$(json-search ${func}${FUNCTION_SUFFIX} < osc-api.json | json-search $x)
     local direct_ref=$(jq -r '.["$ref"]' 2> /dev/null <<< $arg_info)
     local have_direct_ref=$?
     if [[ $have_direct_ref == 0 && "$direct_ref" != 'null' ]]; then

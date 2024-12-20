@@ -28,14 +28,20 @@ It takes three arguments: a source file, a destination file, and a language.
 The language argument is crucial as certain keywords might be interpreted differently depending on the target language.
 
 The script uses a file called osc-api.json, which represents the OpenAPI specification in JSON format.
-For the Outscale API, the YAML source is converted to JSON using yq.
+For the Outscale API, the YAML source is converted to JSON using `yq`: (https://kislyuk.github.io/yq/ or https://github.com/mikefarah/yq)
 
-When generating API calls, COGNAC assumes that the OpenAPI file contains components named CallRequest.
+When generating API calls, COGNAC by default assumes that the OpenAPI file contains components named CallRequest.
 For example, if the API has a call named `CreatePony`, the corresponding component should be located at `#/components/schemas/CreatePonyRequest`.
+
+You can modify the suffix of functions by using `--function-suffix=FUNCTION_SUFFIX` option with `./configure` command.
+
+Alternatively, you can generate functions based on the contents of `paths` by using the `./configure --from-path` option.
 
 *Note: There are two versions of yq: one written in Python and one in Go. The default version depends on your distribution. On Arch-based distributions, the Python version is typically the default, whereas on Debian-based distributions, the Go version is default. COGNAC supports both, but to use the Go version, you need to pass `--yq-go` to `./configure`.*
 
-### Example: Generating a CLI for a New API
+### Examples: Generating a CLI for a New API
+
+#### Configure Cognac for an API using elements in the schema as entry points for API calls.
 
 Let’s say you have an API that is not the Outscale API, and you want to generate a CLI for it.
 You have a URL to a YAML file, such as `https://ponyapi.yolo/`, and the API request components are named `XInput` instead of `XRequest`.
@@ -44,14 +50,21 @@ To configure the Makefile to generate the CLI with the name `pony-cli`, and adju
 
 Run the following command:
 ```bash
-./configure --cli-name=pony-cli --api-script='curl -s https://ponyapi.yolo | yq $(YQ_ARG) | sed "s/Input/Request/" > osc-api.json'
+./configure --cli-name=pony-cli --function-suffix Input --api-script='curl -s https://ponyapi.yolo | yq $(YQ_ARG)" > osc-api.json'
 ```
 
 `-cli-name=pony-cli` set the generated binary name to `pony-cli`
 
 ```bash
---api-script='curl -s https://ponyapi.yolo | yq $(YQ_ARG) | sed "s/Input/Request/" > osc-api.json'
+--function-suffix Input
 ```
+
+Search for functions named XInput instead of XRequest.
+```bash
+--api-script='curl -s https://ponyapi.yolo | yq $(YQ_ARG) > osc-api.json'
+```
+
+
 This script is used to fetch the API file.
 
 
@@ -59,7 +72,23 @@ Here’s what the script does:
 
 1. Retrieves the API in YAML format using curl -s `https://ponyapi.yolo/.`
 2. Converts the YAML to JSON using yq `$(YQ_ARG)`. *Note the usage of `$(YQ_ARG)`, so ./configure can handle go version of yq*
-3. Renames all components named `XInput` to `XRequest`.
+
+
+#### Configure Cognac for an API using elements in the path as entry points for API calls.
+
+For this example we will use [guru](https://apis.guru/api-doc/)
+
+Run the following command:
+```
+./configure --sdk-name=guru-sdk --cli-name=guru --from-path --api-script='curl -s https://api.apis.guru/v2/openapi.yaml | yq $(YQ_ARG)" > osc-api.json'
+```
+
+`--cli-name=guru`: Sets the generated binary name to `guru`.
+`--sdk-name=guru-sdk`: Sets the generated SDK name and the UserAgent to `guru-sdk`.
+`--from-path`: Generates API calls from elements in `paths` instead of `components.schemas`.
+
+
+#### Generate the Code
 
 Once this setup is complete, you can now use the Makefile. It's also a good idea to run ./configure --help, as it contains several useful options.
 - `--wget-json-search`: Helps with downloading `json-search`, which can be tricky to install, **If unsure, we recommend using this by default**
