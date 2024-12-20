@@ -37,12 +37,12 @@ for arg in $@; do
    --debug-mode				enable debug in cognac (output on stderr)
    --function-suffix=suffix		suffix use to find function in componants, default: Request
    --funclist-arg=arg			arguments to pass to funclist
-   --from-path				use paths instead of componant suffix for functions generations
+   --from-path				Uses paths instead of component suffixes for function generation
    --api-script=script			how to generate osc-api.json
    --yq-go                              use go version of yq, that use diferents arguments
    --curl-path=PATH			path to curl source root
    --sdk-version			sdk-version to generate (format 0xMajMajminMinPatchPatch(0x000302))
-    --target-api=VERSION			choose a version, 'master' is the default
+   --target-api=VERSION			choose a version, 'master' is the default
    --curl-install-path=PATH		path to curl installed root
    --list-api-versions			list-api-versions on github
 EOF
