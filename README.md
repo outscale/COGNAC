@@ -35,13 +35,13 @@ For example, if the API has a call named `CreatePony`, the corresponding compone
 
 You can modify the suffix of functions by using `--function-suffix=FUNCTION_SUFFIX` option with `./configure` command.
 
-Or you can generate functions using what is inside `paths`, using `./configure --from-path`
+Alternatively, you can generate functions based on the contents of `paths` by using the `./configure --from-path` option.
 
 *Note: There are two versions of yq: one written in Python and one in Go. The default version depends on your distribution. On Arch-based distributions, the Python version is typically the default, whereas on Debian-based distributions, the Go version is default. COGNAC supports both, but to use the Go version, you need to pass `--yq-go` to `./configure`.*
 
 ### Examples: Generating a CLI for a New API
 
-#### Configure cognac for an Api using elements in schema as entry point for API Calls
+#### Configure Cognac for an API using elements in the schema as entry points for API calls.
 
 Let’s say you have an API that is not the Outscale API, and you want to generate a CLI for it.
 You have a URL to a YAML file, such as `https://ponyapi.yolo/`, and the API request components are named `XInput` instead of `XRequest`.
@@ -74,21 +74,21 @@ Here’s what the script does:
 2. Converts the YAML to JSON using yq `$(YQ_ARG)`. *Note the usage of `$(YQ_ARG)`, so ./configure can handle go version of yq*
 
 
-#### Configure cognac for an Api using elements in path as entry point for API Calls
+#### Configure Cognac for an API using elements in the path as entry points for API calls.
 
 For this example we will use [guru](https://apis.guru/api-doc/)
 
-Run the following commande
+Run the following command:
 ```
 ./configure --sdk-name=guru-sdk --cli-name=guru --from-path --api-script='curl -s https://api.apis.guru/v2/openapi.yaml | yq $(YQ_ARG)" > osc-api.json'
 ```
 
-`--cli-name=guru` set the generated binary name to `guru`
-`--sdk-name=guru-sdk` set the generate sdk name and UserAgent to `guru-sdk`
-`--from-path` generate API calls from elements in `paths` instead of `components.schemas`
+`--cli-name=guru`: Sets the generated binary name to `guru`.
+`--sdk-name=guru-sdk`: Sets the generated SDK name and the UserAgent to `guru-sdk`.
+`--from-path`: Generates API calls from elements in `paths` instead of `components.schemas`.
 
 
-#### Generte the code
+#### Generate the Code
 
 Once this setup is complete, you can now use the Makefile. It's also a good idea to run ./configure --help, as it contains several useful options.
 - `--wget-json-search`: Helps with downloading `json-search`, which can be tricky to install, **If unsure, we recommend using this by default**
