@@ -244,7 +244,11 @@ replace_args()
 		echo -en $D1
 		local caml_x=$(bin/path_to_camelcase "$x")
 		local required=$(bin/get_argument_list osc-api.json "${x}${FUNCTION_SUFFIX}" --require)
-		local usage_required=$( for a in $(echo $required | tr -d ','); do echo -n " --${a}=${a,,}"; done )
+		if [[ $required == "null" ]]; then
+		    usage_required=""
+		else
+		    usage_required=$( for a in $(echo $required | tr -d ','); do echo -n " --${a}=${a,,}"; done )
+		fi
 		local usage="\"Usage: oapi-cli $caml_x ${usage_required} [OPTIONS]\n\""
 		local call_desc=$(jq .paths.\""/$x"\".description < osc-api.json | sed 's/<br \/>//g' | tr -d '"' | fold -s | sed 's/^/"/;s/$/\\n"/')
 
