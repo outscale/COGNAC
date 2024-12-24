@@ -54,7 +54,7 @@ bin/line_check: bin/line_check.c
 	$(CC) -O3 bin/line_check.c -o bin/line_check
 
 bin/get_argument_list: bin/get_argument_list.c
-	$(CC) -O3 -g bin/get_argument_list.c $(JSON_C_LDFLAGS) $(JSON_C_CFLAGS) -o bin/get_argument_list
+	$(CC) -O3 -g --std=gnu17 bin/get_argument_list.c $(JSON_C_LDFLAGS) $(JSON_C_CFLAGS) -o bin/get_argument_list
 
 bin/get_path_type: bin/get_path_type.c
 	$(CC) -O3 -g bin/get_path_type.c $(JSON_C_LDFLAGS) $(JSON_C_CFLAGS) -o bin/get_path_type
