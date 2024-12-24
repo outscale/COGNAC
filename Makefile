@@ -81,7 +81,7 @@ config.sh: configure config.mk
 	echo "export CLI_NAME=$(CLI_NAME)" >> config.sh
 	echo "export SDK_NAME=$(SDK_NAME)" >> config.sh
 	echo "export FROM_PATH=$(FROM_PATH)" >> config.sh
-	echo -e "debug()\n{" >> config.sh
+	echo -e "function debug()\n{" >> config.sh
 	echo -e '\tif [[ "$$DEBUG_MODE" == "1" ]] ; then echo "$$@" >&2 ; fi\n}' >> config.sh
 	echo export DEBUG_MODE=$(DEBUG_MODE) >> config.sh
 

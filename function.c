@@ -14,9 +14,9 @@ static  int ____snake_func_____data(struct osc_env *e, struct osc_____snake_func
 	osc_str_append_string(data, "{");
 	____construct_data____
 	osc_str_append_string(data, "}");
-	____construct_path____
 
 no_data:
+	____construct_path____
 	____maybe_query_set____
 	curl_easy_setopt(e->c, CURLOPT_URL, end_call.buf);
 	osc_deinit_str(&end_call);
