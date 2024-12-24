@@ -64,10 +64,11 @@ int main(int ac, char **av)
 		struct json_object *schema;
 		struct json_object *func;
 		struct json_object *properties;
+		int i;
 
 	in_schema:
-		int i = 0;
 
+		i = 0;
 		OBJ_GET(j_file, "components", &compo);
 		OBJ_GET(compo, "schemas", &schema);
 		OBJ_GET(schema, componant_name, &func);
