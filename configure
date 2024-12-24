@@ -35,13 +35,13 @@ for arg in $@; do
    --cli-name=Name			set cli name, default: oapi-cli
    --sdk-name=name			set sdk Name, default: osc-sdk
    --debug-mode				enable debug in cognac (output on stderr)
-   --function-suffix=suffix		suffix use to find function in componants, default: Request
+   --function-suffix=suffix		suffix used to identify functions in components. Default: Request
    --funclist-arg=arg			arguments to pass to funclist
    --from-path				Uses paths instead of component suffixes for function generation
    --api-script=script			how to generate osc-api.json
    --yq-go                              use go version of yq, that use diferents arguments
    --curl-path=PATH			path to curl source root
-   --sdk-version			sdk-version to generate (format 0xMajMajminMinPatchPatch(0x000302))
+   --sdk-version			sdk-version to generate (format 0xMajMajMinMinPatchPatch(0x000302))
    --target-api=VERSION			choose a version, 'master' is the default
    --curl-install-path=PATH		path to curl installed root
    --list-api-versions			list-api-versions on github
