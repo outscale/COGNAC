@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# need this to have sort have uniformed output
+export LC_COLLATE=C
+
 CALL_LIST_FILE=./call_list
 CALL_LIST=$(cat $CALL_LIST_FILE)
 
