@@ -81,8 +81,9 @@ config.sh: configure config.mk
 	echo "export CLI_NAME=$(CLI_NAME)" >> config.sh
 	echo "export SDK_NAME=$(SDK_NAME)" >> config.sh
 	echo "export FROM_PATH=$(FROM_PATH)" >> config.sh
-	echo -e "function debug()\n{" >> config.sh
-	echo -e '\tif [[ "$$DEBUG_MODE" == "1" ]] ; then echo "$$@" >&2 ; fi\n}' >> config.sh
+	echo "function debug() {" >> config.sh
+	echo  '    if [[ "$$DEBUG_MODE" == "1" ]] ; then echo "$$@" >&2 ; fi' >> config.sh
+	echo '}' >> config.sh
 	echo export DEBUG_MODE=$(DEBUG_MODE) >> config.sh
 
 call_list: osc-api.json bin/funclist
