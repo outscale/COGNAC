@@ -20,7 +20,7 @@ FUNCTION_SUFFIX=Request
 FROM_PATH=0
 SDK_NAME='osc-sdk'
 FUNCLIST_ARG=''
-API_SCRIPT='curl -s https://raw.githubusercontent.com/outscale/osc-api/$(API_VERSION)/outscale.yaml | yq $(YQ_ARG) > osc-api.json'
+API_SCRIPT='curl -s https://raw.githubusercontent.com/outscale/osc-api-deploy/$(API_VERSION)/outscale-c.yaml | yq $(YQ_ARG) > osc-api.json'
 DEBUG_MODE=0
 
 inc=1
