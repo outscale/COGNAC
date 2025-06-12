@@ -13,7 +13,7 @@ JSON_C_RULE=''
 HAVE_RECOMPILE_JSON_C=0
 LD_CURLLIB_PATH=''
 LD_JSONCLIB_PATH=''
-API_VERSION=master
+API_VERSION=main
 SDK_VERSION=0xC061AC
 CLI_NAME=oapi-cli
 FUNCTION_SUFFIX=Request
@@ -87,7 +87,7 @@ EOF
     elif [ "--from-path" = $arg ]; then
 	FROM_PATH=1
     elif [ "--target-api" = $( echo "$arg" | cut -d '=' -f 1) ]; then
-	API_VERSION=$( echo $arg | cut -f 2 -d '=' )
+	API_VERSION=v$( echo $arg | cut -f 2 -d '=' )
     elif [ "--cli-name" = $( echo "$arg" | cut -d '=' -f 1) ]; then
 	CLI_NAME=$( echo $arg | cut -f 2 -d '=' )
     elif [ "--api-script" = $( echo "$arg" | cut -d '=' -f 1) ]; then
@@ -132,7 +132,7 @@ echo SED_ALIAS=$SED_ALIAS >> config.mk
 echo JSON_C_LDFLAGS=$JSON_C_LDFLAGS >> config.mk
 echo JSON_C_CFLAGS=$JSON_C_CFLAGS >> config.mk
 echo JSON_C_RULE=$JSON_C_RULE >> config.mk
-echo API_VERSION=$API_VERSION >> config.mk
+echo API_VERSION=$( echo $API_VERSION | cut -f 2 -d 'v' ) >> config.mk
 echo CLI_NAME=$CLI_NAME >> config.mk
 if [[ "$FROM_PATH" == "1" ]]; then
     FUNCLIST_ARG="--from-path $FUNCLIST_ARG"
