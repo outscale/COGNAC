@@ -485,17 +485,22 @@ EOF
 			    goto ${snake_l}_arg;
 		     }
 		     cret = osc_$snake_l(&e, &r, &a);
-            	     TRY(cret, "fail to call $l: %s\n", curl_easy_strerror(cret));
-		     CHK_BAD_RET(!r.buf, "connection sucessful, but empty responce\n");
 		     jobj = NULL;
-		     if (program_flag & OAPI_RAW_OUTPUT)
-		             puts(r.buf);
-		     else {
+		     if (program_flag & OAPI_RAW_OUTPUT) {
+		     	if (r.buf)
+				puts(r.buf);
+			else if (cret)
+				fprintf(stderr, "fail to call $l: %s", curl_easy_strerror(cret));
+		     } else if (r.buf) {
 			     jobj = json_tokener_parse(r.buf);
 			     puts(json_object_to_json_string_ext(jobj,
 					JSON_C_TO_STRING_PRETTY | JSON_C_TO_STRING_NOSLASHESCAPE |
 					color_flag));
-		     }
+		     } else fprintf(stderr, "Called $l (%s) and received an empty body. ", cret ? "failed" : "succeeded");
+
+                     if (cret)
+		     	return cret;
+
 		     while (i + 1 < ac && !strcmp(av[i + 1], "--set-var")) {
 		     	     ++i;
 			     TRY(i + 1 >= ac, "--set-var require an argument");

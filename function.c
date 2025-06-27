@@ -40,6 +40,16 @@ int osc_____snake_func____(struct osc_env *e, struct osc_str *out, struct osc___
 	  printf("<Data send to curl>\n%s\n</Data send to curl>\n", data.buf);
 	}
 	res = curl_easy_perform(e->c);
+	if (res != CURLE_OK)
+		goto out;
+
+	long statuscode = 200;
+	res = curl_easy_getinfo(e->c, CURLINFO_RESPONSE_CODE, &statuscode);
+	if (res != CURLE_OK)
+		goto out;
+
+	if (statuscode >= 400)
+		res = 1;
 out:
 	osc_deinit_str(&data);
 	return res;
