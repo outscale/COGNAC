@@ -39,7 +39,7 @@ int osc_____snake_func____(struct osc_env *e, struct osc_str *out, struct osc___
 	if (e->flag & OSC_VERBOSE_MODE) {
 	  printf("<Data send to curl>\n%s\n</Data send to curl>\n", data.buf);
 	}
-	res = curl_easy_perform(e->c);
+	res = osc_easy_perform(e);
 	if (res != CURLE_OK)
 		goto out;
 

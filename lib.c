@@ -42,6 +42,7 @@
 #include <unistd.h>
 #include "osc_sdk.h"
 #include "json.h"
+#include <math.h>
 
 #define AK_SIZE 20
 #define SK_SIZE 40
@@ -551,11 +552,17 @@ int osc_init_sdk_ext(struct osc_env *e, const char *profile, unsigned int flag,
 	char *auth = getenv("OSC_AUTH_METHOD");
 	char *force_log = cfg_login(cfg);
 	char *force_pass = cfg_pass(cfg);
+	char *max_retries = getenv("OSC_MAX_RETRIES");
+	char *retry_backoff_jitter = getenv("OSC_RETRY_BACKOFF_JITTER");
+	char *retry_backoff_factor = getenv("OSC_RETRY_BACKOFF_FACTOR");
 
 	strcpy(stpcpy(user_agent, "____sdk_name____-c/"), osc_sdk_version_str());
 	e->region = getenv("OSC_REGION");
 	e->flag = flag;
 	e->auth_method = cfg ? cfg->auth_method : OSC_AKSK_METHOD;
+	e->max_retries = 3;
+	e->retry_backoff_factor = 1.0;
+	e->retry_backoff_jitter = 3.0;
 	endpoint = getenv("OSC_ENDPOINT_API");
 	osc_init_str(&e->endpoint);
 
@@ -567,6 +574,13 @@ int osc_init_sdk_ext(struct osc_env *e, const char *profile, unsigned int flag,
 		fprintf(stderr, "'%s' invalid authentication method\n", auth);
 		return -1;
 	}
+
+	if (max_retries)
+		e->max_retries = (int)strtol(max_retries, NULL, 10);
+	if (retry_backoff_factor)
+		e->retry_backoff_factor = (float)strtod(retry_backoff_factor, NULL);
+	if (retry_backoff_jitter)
+		e->retry_backoff_jitter = (float)strtod(retry_backoff_jitter, NULL);
 
 	if (force_log)
 		e->ak = force_log;
@@ -758,4 +772,68 @@ void osc_deinit_sdk(struct osc_env *e)
 
 	e->c = NULL;
 	e->flag = 0;
+}
+
+static int osc_msleep(int ms) {
+    struct timespec t = { .tv_sec = ms / 1000, .tv_nsec = (ms % 1000) * 1000 };
+    return nanosleep(&t, NULL);
+}
+
+CURLcode osc_easy_perform(struct osc_env *e) {
+    CURL *handle, *tmp;
+    CURLcode ret;
+    long response_code;
+    int backoff;
+
+    for (int a = 0; a < e->max_retries; a++) {
+        response_code = 200;
+        handle = curl_easy_duphandle(e->c);
+        if (!handle)
+            return -1;
+
+        ret = curl_easy_perform(handle);
+        switch (ret) {
+            case CURLE_OK:
+                break;
+            case CURLE_NOT_BUILT_IN:
+            case CURLE_WRITE_ERROR:
+            case CURLE_READ_ERROR:
+            case CURLE_OUT_OF_MEMORY:
+            case CURLE_BAD_FUNCTION_ARGUMENT:
+            case CURLE_SSL_ENGINE_NOTFOUND:
+            case CURLE_SSL_ENGINE_SETFAILED:
+            case CURLE_SSL_CIPHER:
+            case CURLE_SSL_ENGINE_INITFAILED:
+            case CURLE_SSL_CACERT_BADFILE:
+            case CURLE_SSL_CLIENTCERT:
+            case CURLE_AUTH_ERROR:
+                goto osc_easy_perform_return;
+            default:
+                goto osc_easy_perform_retry;
+        }
+
+        ret = curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &response_code);
+        if (ret !=  CURLE_OK)
+            goto osc_easy_perform_retry;
+
+        if (response_code == 429
+            || response_code == 409
+            || (response_code >= 500 && response_code < 600)) {
+osc_easy_perform_retry:
+            backoff = (int)(1000 * e->retry_backoff_factor * powf(2.0, (float)a));
+            backoff += (rand() * e->retry_backoff_jitter) / (RAND_MAX / 1000);
+            fprintf(stderr, "WARN: attempt %d failed. Retrying in %d ms.\n", a, backoff);
+            osc_msleep(backoff);
+            backoff *= e->retry_backoff_factor;
+            continue;
+        }
+
+osc_easy_perform_return:
+        break;
+    }
+
+    tmp = e->c;
+    e->c = handle;
+    curl_easy_cleanup(tmp);
+    return ret;
 }
