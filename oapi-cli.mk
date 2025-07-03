@@ -1,6 +1,6 @@
 #-Wincompatible-pointer-types
 $(CLI_NAME): $(OAPI_RULE_DEPEDENCIES) $(JSON_C_RULE)
-	$(CC) -g -std=gnu11  -Wall -Wextra -Wno-unused-function -Wno-unused-parameter main.c osc_sdk.c $(CURL_LD) $(JSON_C_LDFLAGS) $(CURL_CFLAGS) $${CURL_BASH_CFLAGS} $(JSON_C_CFLAGS) -o $(CLI_NAME) -DWITH_DESCRIPTION=1 $(CFLAGS)
+	$(CC) -g -std=gnu11  -Wall -Wextra -Wno-unused-function -Wno-unused-parameter main.c osc_sdk.c -lm $(CURL_LD) $(JSON_C_LDFLAGS) $(CURL_CFLAGS) $${CURL_BASH_CFLAGS} $(JSON_C_CFLAGS) -o $(CLI_NAME) -DWITH_DESCRIPTION=1 $(CFLAGS)
 
 appimagetool-x86_64.AppImage:
 	wget https://github.com/AppImage/AppImageKit/releases/download/12/appimagetool-x86_64.AppImage
