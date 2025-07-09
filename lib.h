@@ -104,6 +104,9 @@ struct osc_env {
 	enum osc_auth_method auth_method;
 	struct curl_slist *headers;
 	struct osc_str endpoint;
+    int max_retries;
+    float retry_backoff_factor;
+    float retry_backoff_jitter;
 	CURL *c;
 };
 
@@ -220,6 +223,8 @@ const char *osc_find_args_description(const char *call_name);
 const char **osc_calls_name(void);
 
 #endif /* WITH_DESCRIPTION */
+
+CURLcode osc_easy_perform(struct osc_env *e);
 
 ____functions_proto____
 
