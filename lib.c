@@ -248,7 +248,7 @@ static char *osc_strdup(const char *str) {
 		char *home = getenv("HOME");				\
 									\
 		TRY(strlen(home) + sizeof CFG_FILE > sizeof buf,	\
-		    "home path too big");				\
+		    "path of home directory is too long");				\
 		strcpy(stpcpy(buf, home), dest);			\
 	}
 #endif
@@ -662,7 +662,7 @@ ____make_default_endpoint____
 		}
 
 		if (strlen(e->ak) != AK_SIZE || strlen(e->sk) != SK_SIZE) {
-			fprintf(stderr, "Wrong access key or secret key size\n");
+			fprintf(stderr, "wrong access key or secret key size\n");
 			return -1;
 		}
 	} else if (e->auth_method == OSC_PASSWORD_METHOD) {
@@ -710,7 +710,7 @@ ____make_default_endpoint____
 
 		time(&clock);
 #if SAFE_C == 1
-		TRY(!gmtime_r(&clock, &tm), "gmtime_r fail\n");\
+		TRY(!gmtime_r(&clock, &tm), "failed to convert time\n");\
 		tmp = &tm;
 #else
 		(void)tm;

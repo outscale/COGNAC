@@ -205,7 +205,7 @@ ${indent_plus}	      pos = strtoul(dot_pos, &endptr, 0);
 ${indent_plus}	      if (endptr == dot_pos)
 ${indent_plus}		      BAD_RET("'${a}' require an index (example $type.$a.0)\n");
 ${indent_plus}	      else if (*endptr != '.')
-${indent_plus}		      BAD_RET("'${a}' require a .\n");
+${indent_plus}		      BAD_RET("'${a}' require a '.'\n");
 ${indent_plus}	      TRY_ALLOC_AT(s,${snake_a}, pa, pos, sizeof(*s->${snake_a}));
 ${indent_plus}	      cascade_struct = &s->${snake_a}[pos];
 ${indent_plus}	      cascade_parser = ${sub_type}_parser;
@@ -379,7 +379,7 @@ EOF
 		    if [[ "$aditional" == "null" || "$aditional" == "false" ]]; then
 			cat <<EOF
 	{
-		fprintf(stderr, "'%s' not an argumemt of '$s'\n", str);
+		fprintf(stderr, "'%s' is not an argumemt of '$s'\n", str);
 		return -1;
 	}
 EOF
@@ -388,7 +388,7 @@ EOF
 			cat <<EOF
 	{
 		struct osc_additional_strings *elem = malloc(sizeof *elem);
-		TRY(!elem, "Memory allocation failed");
+		TRY(!elem, "memory allocation failed");
 		(void)aret;
 		ptr_array_append(pa, elem);
 
@@ -431,8 +431,7 @@ EOF
 		           char *aa = i + 2 < ac ? av[i + 2] : 0;
 			   int incr = 2;
 			   char *eq_ptr = strchr(next_a, '=');
-
-	      	           CHK_BAD_RET(!cascade_struct, "cascade need to be se first\n");
+	      	           CHK_BAD_RET(!cascade_struct, "cascade need to be set first\n");
 			   if (eq_ptr) {
 			      	  CHK_BAD_RET(!*eq_ptr, "cascade need an argument\n");
 			      	  incr = 1;
@@ -479,7 +478,7 @@ EOF
 
 		cat <<EOF
 			    {
-				BAD_RET("'%s' is not a valide argument for '$l'\n", next_a);
+				BAD_RET("'%s' is not a valid argument for '$l'\n", next_a);
 			    }
 		            i += incr;
 			    goto ${snake_l}_arg;
@@ -496,7 +495,7 @@ EOF
 			     puts(json_object_to_json_string_ext(jobj,
 					JSON_C_TO_STRING_PRETTY | JSON_C_TO_STRING_NOSLASHESCAPE |
 					color_flag));
-		     } else fprintf(stderr, "Called $l (%s) and received an empty body. ", cret ? "failed" : "succeeded");
+		     } else fprintf(stderr, "called $l (%s) and received an empty body. ", cret ? "failed" : "succeeded");
 
                      if (cret)
 		     	return cret;
