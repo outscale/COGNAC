@@ -63,17 +63,17 @@
 
 #define META_ARGS(else_cnd)                                                     \
 	if (!strcmp(aa, "--file")) {                                        \
-		TRY(i + 3 >= ac, "file name require");                          \
+		TRY(i + 3 >= ac, "file name required");                          \
 		++incr;                                                         \
 		aa = read_file(files_cnt, av[i + 3], 0);                        \
 		STRY(!aa);                                                      \
 	} else if (!strcmp(aa, "--jsonstr-file")) {                         \
-		TRY(i + 3 >= ac, "file name require");                          \
+		TRY(i + 3 >= ac, "file name required");                          \
 		++incr;                                                         \
 		aa = read_file(files_cnt, av[i + 3], 1);                        \
 		STRY(!aa);                                                      \
 	} else if (!strcmp(aa, "--var")) {                                  \
-		TRY(i + 3 >= ac, "var name require");                           \
+		TRY(i + 3 >= ac, "variable name required");                           \
 		int var_found = 0;                                              \
 		for (int j = 0; j < nb_cli_vars; ++j) {                         \
 			if (!strcmp(cli_vars[j].name, av[i + 3])) {                 \
@@ -159,14 +159,14 @@ static int parse_variable(json_object *jobj, char **av, int ac, int i)
 {
 	const char *tmp = av[i + 1];
 	const char *tmp2;
-	TRY(nb_cli_vars >= VAR_ARRAY_SIZE, "variable asignement fail: too much variables");
+	TRY(nb_cli_vars >= VAR_ARRAY_SIZE, "variable asignement fail: too many variables");
 	struct cli_var *var = &cli_vars[nb_cli_vars++];
 	json_object *j = jobj;
 	char buf[512];
 
 	tmp2 = strchr(tmp, '=');
 	TRY(!tmp2, "variable asignement fail (missing '='))\n");
-	TRY((uintptr_t)(tmp2 - tmp) >= VAR_NAME_SIZE, "var name too long");
+	TRY((uintptr_t)(tmp2 - tmp) >= VAR_NAME_SIZE, "variable name is too long");
 	strncpy(var->name, tmp, tmp2 - tmp);
 	var->name[tmp2 - tmp] = 0;
 	tmp = tmp2 + 1;
@@ -184,7 +184,7 @@ static int parse_variable(json_object *jobj, char **av, int ac, int i)
 			buf[tmp2 - tmp] = 0;
 			j = json_object_object_get(j, buf);
 		}
-		TRY(!j, "variable asignement fail (not found)");
+		TRY(!j, "variable asignement fail (variable not found)");
 		tmp = tmp2 + 1;
 	}
 	tmp2 = tmp + strlen(tmp);
@@ -198,7 +198,7 @@ static int parse_variable(json_object *jobj, char **av, int ac, int i)
 	} else {
 		tmp = json_object_to_json_string_ext(j, JSON_C_TO_STRING_PLAIN);
 	}
-	TRY(strlen(tmp) >= VAR_VAL_SIZE, "variable asignement fail: value too big");
+	TRY(strlen(tmp) >= VAR_VAL_SIZE, "variable asignement fail: value is too long");
 	strcpy(var->val, tmp);
 	return 0;
 
@@ -216,12 +216,12 @@ char *read_file(char *files_cnt[static MAX_FILES_PER_CMD], char *file_name,
 		}
 	}
 	if (dest < 0) {
-		fprintf(stderr, "%s option used too much", call_name);
+		fprintf(stderr, "too many options %s", call_name);
 		return NULL;
 	}
 	FILE *f = fopen(file_name, "rb");
 	if (!f) {
-		fprintf(stderr, "%s fail to open %s", call_name, file_name);
+		fprintf(stderr, "%s failed to open %s", call_name, file_name);
 		return NULL;
 	}
 	if (fseek(f, 0, SEEK_END) < 0) {
@@ -323,7 +323,7 @@ int main(int ac, char **av)
 				auth_str = av[i+1];
 				++i;
 			} else {
-				fprintf(stderr, "--auth-method seems weirds\n");
+				fprintf(stderr, "unexpected auth-method parameter\n");
 				return 1;
 			}
 			auth_m = str_auth_method_to_int(auth_str);
@@ -337,7 +337,7 @@ int main(int ac, char **av)
 				auth_str = av[i+1];
 				++i;
 			} else {
-				fprintf(stderr, "--authentication_method seems weirds\n");
+				fprintf(stderr, "unexpected authentication_method parameter\n");
 				return 1;
 			}
 			auth_m = str_auth_method_to_int(auth_str);
@@ -351,7 +351,7 @@ int main(int ac, char **av)
 				cfg_str = av[i+1];
 				++i;
 			} else {
-				fprintf(stderr, "--config seems weirds\n");
+				fprintf(stderr, "unexpected config parameter\n");
 				return 1;
 			}
 			osc_set_cfg_path(cfg_str);
@@ -363,7 +363,7 @@ int main(int ac, char **av)
 				profile = av[i+1];
 				++i;
 			} else {
-				fprintf(stderr, "--profile seems weirds");
+				fprintf(stderr, "unexpected profile parameter");
 				return 1;
 			}
 		} else if (!argcmp2("--password", av[i], '=')) {
@@ -374,7 +374,7 @@ int main(int ac, char **av)
 				password = av[i+1];
 				++i;
 			} else {
-				fprintf(stderr, "--password seems weirds");
+				fprintf(stderr, "unexpected password parameter");
 				return 1;
 			}
 		} else if (!argcmp2("--login", av[i], '=')) {
@@ -385,7 +385,7 @@ int main(int ac, char **av)
 				login = av[i+1];
 				++i;
 			} else {
-				fprintf(stderr, "--login seems weirds");
+				fprintf(stderr, "unexpected login parameter");
 				return 1;
 			}
 		}
