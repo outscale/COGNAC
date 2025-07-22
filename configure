@@ -42,7 +42,7 @@ for arg in $@; do
    --yq-go                              use go version of yq, that use diferents arguments
    --curl-path=PATH			path to curl source root
    --sdk-version			sdk-version to generate (format 0xMajMajMinMinPatchPatch(0x000302))
-   --target-api=VERSION			choose a version, 'master' is the default
+   --target-api=VERSION			choose a version, 'main' is the default
    --curl-install-path=PATH		path to curl installed root
    --list-api-versions			list-api-versions on github
 EOF
@@ -88,6 +88,7 @@ EOF
 	FROM_PATH=1
     elif [ "--target-api" = $( echo "$arg" | cut -d '=' -f 1) ]; then
 	API_VERSION=v$( echo $arg | cut -f 2 -d '=' )
+    API_SCRIPT='curl -s https://raw.githubusercontent.com/outscale/osc-api-deploy/v$(API_VERSION)/outscale-c.yaml | yq $(YQ_ARG) > osc-api.json'
     elif [ "--cli-name" = $( echo "$arg" | cut -d '=' -f 1) ]; then
 	CLI_NAME=$( echo $arg | cut -f 2 -d '=' )
     elif [ "--api-script" = $( echo "$arg" | cut -d '=' -f 1) ]; then
